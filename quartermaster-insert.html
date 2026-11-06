@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Quartermaster's Insert — Arms, Powder &amp; Vice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&display=swap');
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem 4rem;
+    background: #2b2620;
+    font-family: 'Old Standard TT', serif;
+    color: #2a2018;
+  }
+  .sheet {
+    max-width: 1180px; margin: 0 auto;
+    background: #e8dcc0;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(120,90,40,0.10), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(120,90,40,0.14), transparent 55%);
+    padding: 2rem 2.5rem 3rem;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  }
+
+  .masthead { text-align: center; border-bottom: 4px double #2a2018; padding-bottom: 0.5rem; }
+  .masthead .super { text-transform: uppercase; letter-spacing: 4px; font-size: 0.72rem; font-weight: 700; }
+  .masthead h1 {
+    font-family: 'UnifrakturCook', serif; font-size: 3.6rem; margin: 0.1rem 0; line-height: 1;
+  }
+  .masthead .motto { font-style: italic; font-size: 0.95rem; }
+  .intro {
+    text-align: center; font-size: 0.92rem; max-width: 740px; margin: 1rem auto 0.5rem;
+    font-style: italic; line-height: 1.5;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center;
+    align-items: center; margin: 1.2rem 0 1.6rem;
+    border-top: 1px solid #9a8a68; border-bottom: 1px solid #9a8a68; padding: 0.7rem 0;
+  }
+  .controls button {
+    font-family: 'Old Standard TT', serif; font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 1px; padding: 0.35rem 0.8rem; cursor: pointer;
+    background: #d8c8a4; border: 1.5px solid #2a2018; color: #2a2018; font-weight: 700;
+  }
+  .controls button.active { background: #2a2018; color: #e8dcc0; }
+  .controls .sortlbl { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; margin-left: 0.6rem; }
+  .controls select {
+    font-family: 'Old Standard TT', serif; font-size: 0.8rem; padding: 0.3rem; border: 1.5px solid #2a2018;
+    background: #d8c8a4; color: #2a2018;
+  }
+
+  /* Section headers */
+  .secthead {
+    font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.5rem;
+    text-transform: uppercase; letter-spacing: 1px; text-align: center;
+    margin: 2rem 0 0.2rem; border-bottom: 2px solid #2a2018; padding-bottom: 0.3rem;
+  }
+  .secthead .sub { display:block; font-family:'Old Standard TT',serif; font-style:italic; font-weight:400; font-size:0.85rem; text-transform:none; letter-spacing:0; }
+
+  /* Card grid */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+    gap: 1rem; margin-top: 1rem;
+  }
+  .card {
+    border: 2px solid #2a2018; background: rgba(255,250,235,0.5);
+    padding: 0.8rem 0.9rem 0.9rem; display: flex; flex-direction: column;
+    position: relative; box-shadow: 2px 2px 0 rgba(42,32,24,0.25);
+  }
+  .card .cat-tag {
+    position: absolute; top: -1px; right: -1px; font-size: 0.6rem; text-transform: uppercase;
+    letter-spacing: 1px; background: #2a2018; color: #e8dcc0; padding: 2px 7px; font-weight: 700;
+  }
+  .card h3 {
+    font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.12rem;
+    margin: 0.1rem 0 0.1rem; line-height: 1.05; padding-right: 3.5rem;
+  }
+  .card .price { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card .price .av { font-size: 0.72rem; font-weight: 400; font-style: italic; color: #5a4a32; }
+
+  .statline { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 1px 0; border-bottom: 1px dotted #b0a080; }
+  .statline .k { font-weight: 700; }
+  .statline .v { text-align: right; }
+  .props { font-size: 0.8rem; margin: 0.45rem 0 0; line-height: 1.4; }
+  .props b { font-variant: small-caps; letter-spacing: 0.5px; }
+  .tradeoff {
+    font-size: 0.8rem; font-style: italic; margin-top: 0.55rem; padding-top: 0.45rem;
+    border-top: 1px solid #9a8a68; line-height: 1.4;
+  }
+  .tradeoff::before { content: "⚖ "; font-style: normal; }
+
+  /* Boon/Bane for drinks */
+  .boon, .bane { font-size: 0.8rem; line-height: 1.4; margin: 0.3rem 0; }
+  .boon b { color: #2e5a2a; font-variant: small-caps; letter-spacing: 0.5px; }
+  .bane b { color: #883022; font-variant: small-caps; letter-spacing: 0.5px; }
+
+  .rulebox {
+    border: 3px double #2a2018; padding: 1rem 1.4rem; margin: 1.6rem 0;
+    background: rgba(160,130,70,0.10); font-size: 0.9rem; line-height: 1.55;
+  }
+  .rulebox h4 {
+    font-family: 'Playfair Display', serif; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 1px; margin: 0 0 0.5rem; font-size: 1.1rem; text-align: center;
+  }
+  .rulebox table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+  .rulebox td, .rulebox th { padding: 3px 6px; border-bottom: 1px solid #b0a080; text-align: left; }
+  .rulebox th { border-bottom: 1.5px solid #2a2018; text-transform: uppercase; font-size: 0.74rem; letter-spacing: 1px; }
+  .rulebox a { color: #883022; font-weight: bold; text-decoration: underline; }
+  .rulebox a:hover { color: #6e1f16; }
+  .footnote { text-align:center; font-style:italic; font-size:0.82rem; margin-top:2rem; border-top:1px solid #9a8a68; padding-top:0.8rem; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="super">A Supplement to The Frontier Index</div>
+    <h1>Ivinson &amp; Co. General Store</h1>
+    <div class="motto">— Goods, Arms &amp; Powder for Sale · Grand Avenue, Laramie City, W.T. · 1868 —<br>"If We Have Not Got It, You Have Not Yet Need of It"</div>
+  </div>
+
+  <p class="intro">Herein are set down the particulars of every implement of work and violence a man may purchase at our counter, with their effects rendered plain for the careful buyer. Prices in dollars (gold pieces). Damage and properties given for the use of those who keep ledgers of such things. <i>For drink, smoke, and the comforts of vice, inquire at the saloon's bill of fare, not at this counter.</i></p>
+
+  <div class="controls">
+    <button data-filter="all" class="active">All</button>
+    <button data-filter="sidearm">Sidearms</button>
+    <button data-filter="longgun">Long Guns</button>
+    <button data-filter="shotgun">Shotguns</button>
+    <button data-filter="blade">Blades &amp; Thrown</button>
+    <button data-filter="explosive">Explosives</button>
+    <button data-filter="ammo">Powder &amp; Ball</button>
+    <button data-filter="marvel">Marvels</button>
+    <span class="sortlbl">Sort:</span>
+    <select id="sort">
+      <option value="default">As Listed</option>
+      <option value="price-lo">Price ↑</option>
+      <option value="price-hi">Price ↓</option>
+      <option value="dmg-hi">Avg. Damage ↓</option>
+    </select>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <!-- ===================== SIDEARMS ===================== -->
+    <div class="card" data-cat="sidearm" data-price="17" data-dmg="5.5" data-weapon="colt-army">
+      <span class="cat-tag">Sidearm</span>
+      <h3>Colt Army Revolver, .44</h3>
+      <div class="price"><span class="amt" data-price="goods.colt-army">$17</span> <span class="av">· avg 5–6 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d10 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">40 / 120 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">6 shots</span></div>
+      <div class="props"><b>Reload 6</b> (a Bonus Action reloads after the 6th shot). <b>Misfire 1</b> (natural 1 jams; full Action to clear).</div>
+      <div class="tradeoff">The workhorse. Six before you reload, honest range, fits any holster. Every gunhand in Laramie owns one.</div>
+    </div>
+
+    <div class="card" data-cat="sidearm" data-price="11" data-dmg="4.5" data-weapon="colt-navy">
+      <span class="cat-tag">Sidearm</span>
+      <h3>Colt Navy / Pocket Pistol</h3>
+      <div class="price"><span class="amt" data-price="goods.colt-navy">$11</span> <span class="av">· avg 4–5 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d8 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">30 / 90 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">5 shots</span></div>
+      <div class="props"><b>Light · Concealable</b> (drawn as part of an attack). <b>Reload 5 · Misfire 1.</b></div>
+      <div class="tradeoff">Less iron, less bite — but slips under a coat. The gun you didn't know a man was carrying.</div>
+    </div>
+
+    <div class="card" data-cat="sidearm" data-price="8" data-dmg="3.5" data-weapon="derringer">
+      <span class="cat-tag">Sidearm</span>
+      <h3>Derringer</h3>
+      <div class="price"><span class="amt" data-price="goods.derringer">$8</span> <span class="av">· avg 3–4 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d6 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">10 / 30 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">1 shot</span></div>
+      <div class="props"><b>Light · Hidden</b> (Sleight of Hand vs. Perception to conceal — boot, glove, sleeve). <b>Reload 1 · Misfire 1.</b></div>
+      <div class="tradeoff">One shot, spitting distance. But nobody searches a lady's glove or a gambler's cuff. The great equalizer at the card table.</div>
+    </div>
+
+    <!-- ===================== LONG GUNS ===================== -->
+    <div class="card" data-cat="longgun" data-price="48" data-dmg="5.5" data-weapon="winchester">
+      <span class="cat-tag">Long Gun</span>
+      <h3>Winchester '66 Repeater</h3>
+      <div class="price"><span class="amt" data-price="goods.winchester">$48</span> <span class="av">· avg 5–6 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d10 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">80 / 240 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">15 shots</span></div>
+      <div class="props"><b>Two-handed. Repeating</b> — fires every round (like a revolver, never single-shot). <b>Misfire 1.</b> Holds 15 — you will not empty it in any ordinary fight.</div>
+      <div class="tradeoff">Why it costs near three times a Colt: <b>twice the reach (240 ft)</b> and a magazine deep enough to hold off a posse without running dry. It hits softer than the buffalo guns (1d10, not 1d12) — but they fire every <i>other</i> round while the Winchester fires every one. Rate and range, at a price.</div>
+    </div>
+
+    <div class="card" data-cat="longgun" data-price="30" data-dmg="6.5" data-weapon="sharps">
+      <span class="cat-tag">Long Gun</span>
+      <h3>Sharps Hunting Rifle</h3>
+      <div class="price"><span class="amt" data-price="goods.sharps">$30</span> <span class="av">· avg 6–7 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d12 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">100 / 300 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">1 shot</span></div>
+      <div class="props"><b>Two-handed. Reload 1</b> (full Action). <b>Misfire 1.</b> <b>Deadly Aim</b> — if you do not move and take the Aim action, add +1d12 to the hit.</div>
+      <div class="tradeoff">The buffalo gun. Hits hardest, reaches farthest, and a patient shooter who takes aim hits like a cannon — but it is one shot, then a long second loading while the world shoots back.</div>
+    </div>
+
+    <div class="card" data-cat="longgun" data-price="9" data-dmg="6.5" data-weapon="musket">
+      <span class="cat-tag">Long Gun</span>
+      <h3>Surplus Army Musket</h3>
+      <div class="price"><span class="amt" data-price="goods.musket">$9</span> <span class="av">· avg 6–7 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d12 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">40 / 120 ft</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">1 shot</span></div>
+      <div class="props"><b>Two-handed. Reload 1</b> (full Action). <b>Misfire 1.</b></div>
+      <div class="tradeoff">War-surplus iron, cheap as dirt, hits like a mule. But one shot and a slow load — miss, and the next ten seconds belong to the other fellow. The poor man's rifle.</div>
+    </div>
+
+    <!-- ===================== SHOTGUNS ===================== -->
+    <div class="card" data-cat="shotgun" data-price="14" data-dmg="7" data-weapon="shotgun-single">
+      <span class="cat-tag">Shot-Gun</span>
+      <h3>Single-Barrel Shot-Gun</h3>
+      <div class="price"><span class="amt" data-price="goods.shotgun-single">$14</span> <span class="av">· avg 7 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">2d6 piercing</span></div>
+      <div class="statline"><span class="k">Area</span><span class="v">15-ft cone</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">1 shell</span></div>
+      <div class="props"><b>Cone, not aimed</b> — every creature in a 15-ft cone makes a DC 13 Dexterity save: 2d6 on a fail, half on a success. No attack roll; no armor helps (you dodge shot, you don't tank it). <b>Point-Blank</b> — a target within 5 ft has disadvantage on the save. <b>Two-handed. Reload 1 (Action). Misfire 1.</b></div>
+      <div class="tradeoff">Close-up and area-wide — it sweeps a doorway, a hallway, a knot of men. Useless past fifteen feet. One shell, then you reload. The room-clearer.</div>
+    </div>
+
+    <div class="card" data-cat="shotgun" data-price="26" data-dmg="14" data-weapon="shotgun-double">
+      <span class="cat-tag">Shot-Gun</span>
+      <h3>Double-Barrel Shot-Gun</h3>
+      <div class="price"><span class="amt" data-price="goods.shotgun-double">$26</span> <span class="av">· avg up to 14 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">2d6 / barrel</span></div>
+      <div class="statline"><span class="k">Area</span><span class="v">15-ft cone</span></div>
+      <div class="statline"><span class="k">Capacity</span><span class="v">2 shells</span></div>
+      <div class="props"><b>One barrel</b> — 15-ft cone, DC 13 Dex save, 2d6 (half on save). <b>Both Barrels</b> (one Action) — twice the shot: <b>4d6</b> in the cone, DC 15 Dex save (half), then both barrels are spent. <b>Point-Blank</b> disadvantage on the save. <b>Two-handed. Reload 2 (Action). Misfire 1.</b></div>
+      <div class="tradeoff">Twice the price for twice the shot — empty both barrels and the cone deals 4d6 to everyone in it. The catch: do it and you are holding an empty gun, reloading while the room reloads on you.</div>
+    </div>
+
+    <!-- ===================== BLADES & THROWN ===================== -->
+    <div class="card" data-cat="blade" data-price="2.5" data-dmg="3.5" data-weapon="bowie">
+      <span class="cat-tag">Blade</span>
+      <h3>Bowie Knife</h3>
+      <div class="price"><span class="amt" data-price="goods.bowie">$2.50</span> <span class="av">· avg 3–4 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d6 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">melee · thrown 20/60</span></div>
+      <div class="props"><b>Light · Finesse · Thrown.</b> Never misfires. Never runs dry. Never needs reloading.</div>
+      <div class="tradeoff">Silent, cheap, and certain. When the powder's wet and the chamber's empty, the Bowie is still a Bowie.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="2" data-dmg="3.5" data-weapon="tomahawk">
+      <span class="cat-tag">Thrown</span>
+      <h3>Tomahawk</h3>
+      <div class="price"><span class="amt" data-price="goods.tomahawk">$2</span> <span class="av">· avg 3–4 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d6 slashing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">melee · thrown 20/60</span></div>
+      <div class="props"><b>Light · Thrown · Brutal · Silent.</b> <b>Brutal</b> — a melee hit dealing 10+ damage forces a Wound check (Con save DC 10 + half dmg), the same as a bullet. On a crit, roll one extra weapon die. Being <b>Light</b>, a warrior may wield two and make a bonus-action second strike.</div>
+      <div class="tradeoff">Up close it is terror itself — it bites like a gunshot and a man with two of them is a storm of edges. Modest at a throw, fearsome in the hand. The plains warrior's argument.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="1.5" data-dmg="3.5" data-weapon="throwing-spear">
+      <span class="cat-tag">Thrown</span>
+      <h3>Throwing Spear</h3>
+      <div class="price"><span class="amt" data-price="goods.throwing-spear">$1.50</span> <span class="av">· avg 3–4 / 4–5</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d6 (1d8 two-handed melee)</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">melee · thrown 30/120</span></div>
+      <div class="props"><b>Thrown · Versatile · Silent.</b> The longest reach of any hurled weapon — flies farther than knife or hawk. <b>Brace</b> — ready it against a charging foe; if they close into melee you strike first and add +1d8.</div>
+      <div class="tradeoff">Throw it from a distance no knife can manage, or plant it and gut a charging horse. Cheap, silent, and good twice — once in the air, once in the hand.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="4" data-dmg="4.5" data-weapon="war-lance">
+      <span class="cat-tag">Mounted</span>
+      <h3>War Lance</h3>
+      <div class="price"><span class="amt" data-price="goods.war-lance">$4</span> <span class="av">· avg 4–5, more on the charge</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d8 piercing</span></div>
+      <div class="statline"><span class="k">Reach</span><span class="v">10 ft · Brutal</span></div>
+      <div class="props"><b>Reach · Brutal.</b> <b>Mounted Charge</b> — if you move at least 20 ft on horseback in a straight line before the hit, add <b>+2d8</b> damage. <b>Brutal</b> — a hit of 10+ forces a Wound check like a bullet. Unwieldy on foot (no bonus, hard to use in a clinch).</div>
+      <div class="tradeoff">From the saddle at a gallop it is the deadliest weapon on the plains — a single charge can end a man. On foot it is an awkward stick. The horse is half the weapon.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="6" data-dmg="4.5" data-weapon="hunting-bow">
+      <span class="cat-tag">Bow</span>
+      <h3>Hunting Bow</h3>
+      <div class="price"><span class="amt" data-price="goods.hunting-bow">$6</span> <span class="av">· avg 4–5 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d8 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">80 / 320 ft</span></div>
+      <div class="props"><b>Two-handed · Ammunition.</b> <b>Silent</b> — firing draws no attention; no muzzle-flash, no report, never alerts a town or a camp.</div>
+      <div class="tradeoff">Slower and softer than a rifle — but it kills without a sound. The only ranged weapon that does not announce itself to the whole valley.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="1.2" data-dmg="0" data-weapon="lasso">
+      <span class="cat-tag">Tool</span>
+      <h3>Lariat (Lasso)</h3>
+      <div class="price"><span class="amt" data-price="goods.lasso">$1.20</span> <span class="av">· no damage</span></div>
+      <div class="statline"><span class="k">Effect</span><span class="v">Restrains</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">10 / 20 ft</span></div>
+      <div class="props">Functions as a <b>Net</b>. On a hit the target is <b>Restrained</b>; escape with a DC 12 Strength (Athletics) check, or the rope can be cut (sever: 1 slashing). From horseback, drag a roped target.</div>
+      <div class="tradeoff">Takes a man alive. The Vigilance Committee's favorite tool — you cannot hang a corpse, and a live man can be made to talk.</div>
+    </div>
+
+    <div class="card" data-cat="blade" data-price="1.8" data-dmg="3.5" data-weapon="miners-pick">
+      <span class="cat-tag">Tool</span>
+      <h3>Miner's Pick</h3>
+      <div class="price"><span class="amt" data-price="goods.miners-pick">$1.80</span> <span class="av">· avg 3–4 dmg</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">1d6 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">melee</span></div>
+      <div class="props">A tool first, a weapon when it must be. Advantage on checks to break rock, pry boards, or dig.</div>
+      <div class="tradeoff">Stinky Pete's livelihood and, in a pinch, his argument. Every Dwarf in the Medicine Bow owns one.</div>
+    </div>
+
+    <!-- ===================== MARVELS ===================== -->
+    <div class="card" data-cat="marvel" data-price="225" data-dmg="7" data-weapon="hesperus">
+      <span class="cat-tag">Marvel</span>
+      <h3>The Hesperus — Patent Self-Striking Pick</h3>
+      <div class="price"><span class="amt" data-price="goods.hesperus">$225</span> <span class="av">· avg 7 dmg, twice</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">2d6 piercing</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">melee</span></div>
+      <div class="statline"><span class="k">Heft</span><span class="v">Two-handed · Heavy</span></div>
+      <div class="props"><b>Twice-Striking</b> — when you take the Attack action, make <i>one extra attack</i> with it (the spring drives two strikes per swing). <b>Clockwork (Wind 3)</b> — runs 3 rounds, then must be wound (Bonus Action) before further use. <b>Misfire 1</b> — on a natural 1 the works seize; a full Action clears it. <b>Rock-Eater</b> — chews stone, timber, and masonry at thrice the speed of any hand tool; advantage on Strength checks to dig, breach, or demolish.</div>
+      <div class="tradeoff">Laramie's first auto-pick — a Gnome's clockwork wonder, dear as a team of horses. Two blows for every swing and it eats through rock like bread. But it must be wound, it can seize at the worst moment, and three rounds of its shaking in a close shaft is its own kind of danger (Con save DC 12 or a level of exhaustion).</div>
+    </div>
+
+    <!-- ===================== EXPLOSIVES ===================== -->
+    <div class="card" data-cat="explosive" data-price="3" data-dmg="7" data-weapon="molotov">
+      <span class="cat-tag">Incendiary</span>
+      <h3>Coal-Oil Bomb (Molotov)</h3>
+      <div class="price"><span class="amt" data-price="goods.molotov">$3</span> <span class="av">· avg 7 fire</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">2d6 fire</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">thrown 20 / 60 ft</span></div>
+      <div class="statline"><span class="k">Save</span><span class="v">DC 12 Dex (half)</span></div>
+      <div class="props"><b>Splash</b> 5 ft (1d6, DC 12 Dex half). <b>Burning</b> — those who fail take 1d6 fire each round until they use an Action to put it out.</div>
+      <div class="tradeoff">A bottle, a rag, a match. Denies ground, panics horses, burns a building. Cheap chaos — the outlaw's friend.</div>
+    </div>
+
+    <div class="card" data-cat="explosive" data-price="25" data-dmg="10.5" data-weapon="dynamite-stick">
+      <span class="cat-tag">Explosive</span>
+      <h3>Stick of Dynamite</h3>
+      <div class="price"><span class="amt" data-price="goods.dynamite-stick">$25</span> <span class="av">· avg 10–11 fire</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">3d6 fire</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">thrown 20 / 60 ft</span></div>
+      <div class="statline"><span class="k">Save</span><span class="v">DC 14 Dex (half)</span></div>
+      <div class="props"><b>10-ft radius. 1-round fuse</b> (lit on your turn, detonates on your next — a clever foe may throw it back). <b>Burning</b> on a fail.</div>
+      <div class="tradeoff">Mr. Nobel's new marvel, barely a year old and dear as sin in the Territory. The fuse cuts both ways — a thrown stick is a gift to anyone fast enough to return it.</div>
+    </div>
+
+    <div class="card" data-cat="explosive" data-price="60" data-dmg="21" data-weapon="dynamite-bundle">
+      <span class="cat-tag">Explosive</span>
+      <h3>Bundle (Three Sticks)</h3>
+      <div class="price"><span class="amt" data-price="goods.dynamite-bundle">$60</span> <span class="av">· avg 21 fire</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">6d6 fire</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">thrown 15 / 45 ft</span></div>
+      <div class="statline"><span class="k">Save</span><span class="v">DC 16 Dex (half)</span></div>
+      <div class="props"><b>15-ft radius. Structural</b> — drops walls, floors, bridges, and trestles. Heavier; shorter throw.</div>
+      <div class="tradeoff">This does not hurt a man so much as remove the building he is standing in. Bring down a trestle, a vault door, a mine shaft. Subtlety is not on offer.</div>
+    </div>
+
+    <div class="card" data-cat="explosive" data-price="250" data-dmg="24.5" data-weapon="powder-keg">
+      <span class="cat-tag">Explosive</span>
+      <h3>Blasting Powder Keg</h3>
+      <div class="price"><span class="amt" data-price="goods.powder-keg">$250</span> <span class="av">· avg 24–25 fire</span></div>
+      <div class="statline"><span class="k">Damage</span><span class="v" data-wf="dmg">7d6 fire</span></div>
+      <div class="statline"><span class="k">Range</span><span class="v">placed · fuse</span></div>
+      <div class="statline"><span class="k">Save</span><span class="v">DC 14 Dex (half)</span></div>
+      <div class="props"><b>20-ft radius.</b> Cannot be thrown — set and lit. Leaves a 10-ft crater of rubble (difficult terrain). If struck (AC 12, 5 HP) it cooks off early.</div>
+      <div class="tradeoff">A keg's worth. Survey crews use them to clear stumps. In other hands, they clear other things. One careless bullet sets it off — see Fort Sanders, southwest corner.</div>
+    </div>
+
+    <!-- ===================== POWDER & BALL ===================== -->
+    <div class="card" data-cat="ammo" data-price="1" data-dmg="0">
+      <span class="cat-tag">Powder &amp; Ball</span>
+      <h3>Cartridges — a Box of Ten</h3>
+      <div class="price"><span class="amt" data-price="goods.bullets-10">$1</span> <span class="av">· ten rounds</span></div>
+      <div class="statline"><span class="k">Fits</span><span class="v">Colt, Winchester, musket, and the like</span></div>
+      <div class="props">Ten loose rounds, a dollar the box. Keep the pouch full — a dry gun in a fight is a dead man's excuse.</div>
+    </div>
+
+    <div class="card" data-cat="ammo" data-price="5" data-dmg="0">
+      <span class="cat-tag">Powder &amp; Ball</span>
+      <h3>Dynamiting Supplies — Makings for Four Sticks</h3>
+      <div class="price"><span class="amt" data-price="goods.dynamite-supplies">$5</span> <span class="av">· paper, glue &amp; wick for 4 sticks</span></div>
+      <div class="statline"><span class="k">Yields</span><span class="v">4 sticks — you supply the blasting powder</span></div>
+      <div class="props">Waxed paper, cartridge glue, and a coil of fuse — the wrappings to roll <b>four sticks of dynamite</b> for a man who has the powder and the nerve. Far cheaper than buying them finished at $25 the stick, if your hands are steady.</div>
+    </div>
+
+  </div>
+
+  <!-- ===================== RULES BOXES ===================== -->
+
+  <div class="rulebox">
+    <h4>The Rules Behind the Iron</h4>
+    <p>Misfires, range, the shotgun cone, armor, and wounds are in <a href="rules.html">The Rules of the Game</a> — see <a href="rules.html#guns">Guns</a>, <a href="rules.html#cover">Cover</a>, and <a href="rules.html#wounds">Wounds</a>.</p>
+    <p>To roll any of these — to hit, damage, and crits — step over to <a href="dice.html">Roll the Bones</a>.</p>
+  </div>
+
+  <div class="footnote">
+    Ivinson &amp; Co., Grand Avenue. &nbsp;Credit extended to men of good standing; gold dust weighed honest. Prices subject to the honesty of the scale and the temper of the proprietor.<br>
+    For drink, smoke, and vice, see the <b>saloon bill of fare</b>. Full combat rules kept in the campaign vault under <b>mechanics/weapons-and-combat</b>.
+  </div>
+
+</div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const cards = Array.from(grid.querySelectorAll('.card'));
+  const buttons = document.querySelectorAll('.controls button');
+  const sortSel = document.getElementById('sort');
+  let currentFilter = 'all';
+
+  function apply() {
+    // filter
+    cards.forEach(c => {
+      const show = currentFilter === 'all' || c.dataset.cat === currentFilter;
+      c.classList.toggle('hidden', !show);
+    });
+    // sort
+    const v = sortSel.value;
+    const visible = cards.filter(c => !c.classList.contains('hidden'));
+    if (v !== 'default') {
+      visible.sort((a, b) => {
+        if (v === 'price-lo') return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+        if (v === 'price-hi') return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+        if (v === 'dmg-hi')  return parseFloat(b.dataset.dmg) - parseFloat(a.dataset.dmg);
+        return 0;
+      });
+      visible.forEach(c => grid.appendChild(c));
+    } else {
+      cards.forEach(c => grid.appendChild(c));
+      cards.forEach(c => {
+        const show = currentFilter === 'all' || c.dataset.cat === currentFilter;
+        c.classList.toggle('hidden', !show);
+      });
+    }
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => {
+    buttons.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFilter = b.dataset.filter;
+    apply();
+  }));
+  sortSel.addEventListener('change', apply);
+</script>
+<script src="prices.js" defer></script>
+<script src="weapons.js" defer></script>
+</body>
+</html>

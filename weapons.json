@@ -1,0 +1,30 @@
+{
+  "_comment": "SINGLE SOURCE OF TRUTH for weapon combat stats. Used by the dice page's attack roller (dice.html) AND by the store catalog (quartermaster-insert.html via weapons.js). 'id' matches the goods key in prices.json. Damage is dice notation (NdM). type: 'attack' = d20 to-hit, then damage (crit on natural 20 doubles the weapon dice); 'save' = area attack — the target makes a save, so you only roll damage. brutal:true adds one extra weapon die on a crit. feats[] are optional toggles: addDice adds dice once; setDmg/setSave override for that option. Edit here and both the dice page and the store update on next load.",
+  "weapons": [
+    { "id": "colt-army", "name": "Colt Army Revolver, .44", "cat": "Sidearm", "type": "attack", "dmg": "1d10", "dtype": "piercing", "range": "40 / 120 ft", "misfire": true, "notes": "Reload 6 · Misfire 1." },
+    { "id": "colt-navy", "name": "Colt Navy / Pocket Pistol", "cat": "Sidearm", "type": "attack", "dmg": "1d8", "dtype": "piercing", "range": "30 / 90 ft", "misfire": true, "notes": "Light · Concealable · Reload 5 · Misfire 1." },
+    { "id": "derringer", "name": "Derringer", "cat": "Sidearm", "type": "attack", "dmg": "1d6", "dtype": "piercing", "range": "10 / 30 ft", "misfire": true, "notes": "Light · Hidden · 1 shot · Misfire 1." },
+
+    { "id": "winchester", "name": "Winchester '66 Repeater", "cat": "Long Gun", "type": "attack", "dmg": "1d10", "dtype": "piercing", "range": "80 / 240 ft", "misfire": true, "notes": "Two-handed · Repeating (fires every round) · Misfire 1." },
+    { "id": "sharps", "name": "Sharps Hunting Rifle", "cat": "Long Gun", "type": "attack", "dmg": "1d12", "dtype": "piercing", "range": "100 / 300 ft", "misfire": true, "notes": "Two-handed · Reload 1 · Misfire 1.", "feats": [ { "id": "aim", "label": "Deadly Aim (no move + Aim, +1d12)", "addDice": "1d12" } ] },
+    { "id": "musket", "name": "Surplus Army Musket", "cat": "Long Gun", "type": "attack", "dmg": "1d12", "dtype": "piercing", "range": "40 / 120 ft", "misfire": true, "notes": "Two-handed · Reload 1 · Misfire 1." },
+
+    { "id": "shotgun-single", "name": "Single-Barrel Shot-Gun", "cat": "Shot-Gun", "type": "save", "dmg": "2d6", "dtype": "piercing", "save": "DC 13 Dex", "area": "15-ft cone", "misfire": true, "notes": "Cone, not aimed — no armor helps. Point-Blank (within 5 ft): disadvantage on the save. Misfire 1." },
+    { "id": "shotgun-double", "name": "Double-Barrel Shot-Gun", "cat": "Shot-Gun", "type": "save", "dmg": "2d6", "dtype": "piercing", "save": "DC 13 Dex", "area": "15-ft cone", "misfire": true, "notes": "One barrel: 2d6, DC 13. Reload 2 · Misfire 1.", "feats": [ { "id": "both", "label": "Both Barrels (4d6, DC 15)", "setDmg": "4d6", "setSave": "DC 15 Dex" } ] },
+
+    { "id": "bowie", "name": "Bowie Knife", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d6", "dtype": "piercing", "range": "melee · thrown 20/60", "notes": "Light · Finesse · Thrown. Never misfires, never runs dry." },
+    { "id": "tomahawk", "name": "Tomahawk", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d6", "dtype": "slashing", "range": "melee · thrown 20/60", "brutal": true, "notes": "Light · Thrown · Brutal (extra die on a crit) · Silent." },
+    { "id": "throwing-spear", "name": "Throwing Spear", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d6", "dtype": "piercing", "range": "melee · thrown 30/120", "notes": "Thrown · Versatile · Silent.", "feats": [ { "id": "twoh", "label": "Two-handed melee (1d8)", "setDmg": "1d8" }, { "id": "brace", "label": "Brace vs. charge (+1d8)", "addDice": "1d8" } ] },
+    { "id": "war-lance", "name": "War Lance", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d8", "dtype": "piercing", "range": "reach 10 ft", "brutal": true, "notes": "Reach · Brutal. Unwieldy on foot.", "feats": [ { "id": "charge", "label": "Mounted Charge (+2d8)", "addDice": "2d8" } ] },
+    { "id": "hunting-bow", "name": "Hunting Bow", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d8", "dtype": "piercing", "range": "80 / 320 ft", "notes": "Two-handed · Ammunition · Silent (no muzzle-flash, no report)." },
+    { "id": "miners-pick", "name": "Miner's Pick", "cat": "Blade & Thrown", "type": "attack", "dmg": "1d6", "dtype": "piercing", "range": "melee", "notes": "Tool first, weapon when it must be. Advantage on checks to break rock." },
+    { "id": "lasso", "name": "Lariat (Lasso)", "cat": "Blade & Thrown", "type": "attack", "dmg": null, "range": "10 / 20 ft", "notes": "On a hit the target is Restrained (escape DC 12 Str). No damage. From horseback, drag a roped target." },
+
+    { "id": "hesperus", "name": "The Hesperus — Auto-Pick", "cat": "Marvel", "type": "attack", "dmg": "2d6", "dtype": "piercing", "range": "melee", "misfire": true, "notes": "Two-handed · Heavy · Twice-Striking (one extra attack per Attack action) · Clockwork (Wind 3) · Misfire 1." },
+
+    { "id": "molotov", "name": "Coal-Oil Bomb (Molotov)", "cat": "Explosive", "type": "save", "dmg": "2d6", "dtype": "fire", "save": "DC 12 Dex", "range": "thrown 20 / 60 ft", "notes": "Splash 5 ft (1d6). Burning — a failed save takes 1d6 fire each round until put out." },
+    { "id": "dynamite-stick", "name": "Stick of Dynamite", "cat": "Explosive", "type": "save", "dmg": "3d6", "dtype": "fire", "save": "DC 14 Dex", "range": "thrown 20 / 60 ft", "notes": "10-ft radius. 1-round fuse (a quick foe may throw it back). Burning on a fail." },
+    { "id": "dynamite-bundle", "name": "Bundle (Three Sticks)", "cat": "Explosive", "type": "save", "dmg": "6d6", "dtype": "fire", "save": "DC 16 Dex", "range": "thrown 15 / 45 ft", "notes": "15-ft radius. Structural — drops walls, floors, bridges, trestles." },
+    { "id": "powder-keg", "name": "Blasting Powder Keg", "cat": "Explosive", "type": "save", "dmg": "7d6", "dtype": "fire", "save": "DC 14 Dex", "range": "placed · fuse", "notes": "20-ft radius. Cannot be thrown — set and lit. Leaves a 10-ft crater." }
+  ]
+}

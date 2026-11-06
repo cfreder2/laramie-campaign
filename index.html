@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Last Ten Days of Laramie</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&family=Rye&display=swap');
+
+  /* === ADVANCE THE CAMPAIGN: set --day to the current day (1..10); the train
+       slides toward Laramie. Published days on the rail open the reader. === */
+  :root { --day: 2; --total: 10; }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin:0; padding:0 0 4rem; background:#1d160f; color:#ecdfbf;
+    font-family:'Old Standard TT',serif;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(180,140,70,.10), transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 1.2rem; }
+
+  /* ---------- HERO ---------- */
+  header.hero { text-align:center; padding:3rem 1rem 1.2rem; }
+  header .super { text-transform:uppercase; letter-spacing:7px; font-size:.78rem; color:#b89455; }
+  header h1 {
+    font-family:'Rye','Playfair Display',serif; font-size:clamp(2.6rem,7vw,5.2rem);
+    margin:.5rem 0 .1rem; color:#e8c877; line-height:.95;
+    text-shadow:3px 3px 0 #000, 0 0 30px rgba(232,200,119,.25);
+  }
+  header .motto { font-style:italic; font-size:1.05rem; color:#cdbf9a; max-width:720px; margin:.7rem auto 0; line-height:1.55; }
+
+  /* ---------- TRAIN COUNTER ---------- */
+  .counter {
+    margin:2.2rem 0 1rem; border:3px solid #5c3f24; border-radius:6px; overflow:hidden;
+    box-shadow:0 0 40px rgba(0,0,0,.6), inset 0 0 50px rgba(0,0,0,.4);
+    position:relative;
+  }
+  .scene {
+    position:relative; height:300px;
+    background:
+      linear-gradient(180deg,#1a1530 0%, #3b2c4a 32%, #8a4a36 60%, #c87a3a 72%, #7a4a26 80%, #3a2a1a 100%);
+  }
+  /* sun low on the horizon */
+  .sun { position:absolute; left:14%; top:54%; width:70px; height:70px; border-radius:50%;
+    background:radial-gradient(circle,#ffe6a8,#f0b35a 55%,#e0822a 100%);
+    box-shadow:0 0 60px 20px rgba(240,170,70,.45); }
+  /* distant hills */
+  .hills { position:absolute; left:0; right:0; bottom:46%; height:90px;
+    background:
+      radial-gradient(60px 40px at 18% 100%, #2e2336 60%, transparent 61%),
+      radial-gradient(90px 55px at 38% 100%, #281e30 60%, transparent 61%),
+      radial-gradient(70px 45px at 62% 100%, #2e2336 60%, transparent 61%),
+      radial-gradient(110px 60px at 84% 100%, #241a2c 60%, transparent 61%);
+    opacity:.85; }
+  /* Laramie town silhouette at right */
+  .town { position:absolute; right:2%; bottom:42%; width:160px; height:74px; opacity:.92; }
+  .ground { position:absolute; left:0; right:0; bottom:0; height:46%;
+    background:linear-gradient(180deg,#3a2a1a,#241a10); }
+
+  /* the rail line */
+  .rail { position:absolute; left:0; right:0; bottom:30%; height:8px;
+    background:linear-gradient(180deg,#6b5536,#3a2c18); box-shadow:0 2px 0 #1a120a; }
+  .ties { position:absolute; left:0; right:0; bottom:26%; height:10px;
+    background:repeating-linear-gradient(90deg,#4a3820 0 8px, transparent 8px 40px); opacity:.7; }
+
+  /* day markers */
+  .stops { position:absolute; left:4%; right:8%; bottom:18%; display:flex; justify-content:space-between; }
+  .stop { text-align:center; color:#d8c8a0; font-size:.7rem; letter-spacing:1px; }
+  .stop .dot { width:9px; height:9px; border-radius:50%; background:#7a623a; margin:0 auto 4px; border:1px solid #2a2018; }
+  .stop.spent .dot { background:#2e2218; opacity:.45; box-shadow:none; }     /* burnt — days gone */
+  .stop.now   .dot { background:#ffe6a8; box-shadow:0 0 12px #ffe6a8; }       /* today */
+  .stop.left  .dot { background:#e0822a; box-shadow:0 0 9px #e0822a; }        /* days remaining — the lit fuse */
+  .stop.spent .lbl { opacity:.35; }
+  .stop .lbl { opacity:.85; }
+  .stop.pub { cursor:pointer; text-decoration:none; color:#d8c8a0; }
+  .stop.pub:hover .dot { transform:scale(1.35); }
+  .stop.pub:hover .lbl { color:#ffe6a8; opacity:1; }
+  .ed.viewing { outline:2px solid #ffe6a8; outline-offset:2px; }
+  .depot-lbl { position:absolute; right:1%; bottom:17%; text-align:center; color:#e8c877;
+    font-family:'Rye',serif; font-size:.95rem; letter-spacing:1px; text-shadow:1px 1px 0 #000; }
+
+  /* the locomotive — slides with --day */
+  .loco {
+    position:absolute; bottom:30%;
+    left:calc(4% + (var(--day) - 1) / (var(--total) - 1) * 80%);
+    transform:translate(-50%, 38%);
+    animation:chug 1.6s ease-in-out infinite;
+    transition:left .9s cubic-bezier(.34,1.1,.4,1);   /* slides when --day changes */
+    z-index:3; filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));
+  }
+  @keyframes chug { 0%,100%{ transform:translate(-50%,38%);} 50%{ transform:translate(-50%,33%);} }
+  .smoke { position:absolute; border-radius:50%; background:rgba(220,210,195,.55); }
+  .s1 { width:14px;height:14px; animation:puff 2.4s linear infinite; }
+  .s2 { width:18px;height:18px; animation:puff 2.4s linear .8s infinite; }
+  .s3 { width:22px;height:22px; animation:puff 2.4s linear 1.6s infinite; }
+  @keyframes puff {
+    0%   { opacity:.0; transform:translate(0,0) scale(.5); }
+    20%  { opacity:.6; }
+    100% { opacity:0; transform:translate(-60px,-70px) scale(2.4); }
+  }
+
+  /* readout overlay */
+  .readout { position:absolute; left:0; right:0; top:10px; text-align:center; z-index:4; pointer-events:none; }
+  .readout .count { display:inline-flex; align-items:baseline; gap:.5rem; }
+  .readout .bignum { font-family:'Rye',serif; font-size:clamp(3rem,9vw,6rem); line-height:.9; color:#ff7a4a;
+    text-shadow:3px 3px 0 #000, 0 0 26px rgba(255,90,40,.55); animation:pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ opacity:1; text-shadow:3px 3px 0 #000, 0 0 26px rgba(255,90,40,.55);} 50%{ opacity:.92; text-shadow:3px 3px 0 #000, 0 0 38px rgba(255,90,40,.8);} }
+  .readout .cunit { font-family:'Rye',serif; font-size:clamp(1rem,3vw,1.6rem); color:#ffe6a8; letter-spacing:2px;
+    text-shadow:2px 2px 0 #000; text-transform:uppercase; }
+  .readout .sub { font-style:italic; color:#f0dcae; font-size:.92rem; text-shadow:1px 1px 2px #000; margin-top:.1rem; }
+
+  .counter .strip { background:#2c2118; padding:.6rem 1rem; text-align:center; font-size:.85rem; color:#cdbf9a; border-top:2px solid #5c3f24; font-style:italic; }
+
+  /* ---------- EDITIONS ---------- */
+  h2.sect { font-family:'Rye','Playfair Display',serif; color:#e8c877; text-align:center; font-size:1.9rem; margin:2.6rem 0 1.2rem; }
+  .editions { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:.7rem; }
+  .ed {
+    text-align:center; border:2px solid #5c4a2a; background:rgba(20,14,9,.5); padding:.7rem .3rem;
+    color:#7a6a48; position:relative; font-size:.8rem;
+  }
+  .ed .d { font-family:'Rye',serif; font-size:1.5rem; display:block; color:#6a5836; }
+  .ed.live { border-color:#e8c877; color:#ecdfbf; cursor:pointer; box-shadow:0 0 14px rgba(232,200,119,.25); text-decoration:none; display:block; }
+  .ed.live .d { color:#e8c877; }
+  .ed.live:hover { background:rgba(40,28,18,.8); transform:translateY(-2px); }
+  .ed.live .tag { display:block; font-size:.62rem; letter-spacing:1px; text-transform:uppercase; color:#b89455; margin-top:.2rem; }
+  .ed.locked .tag { display:block; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; opacity:.6; margin-top:.2rem; }
+  .ed.locked::after { content:"🔒"; position:absolute; top:4px; right:6px; font-size:.7rem; opacity:.5; }
+
+  /* ---------- MAP ---------- */
+  .map { margin:1.5rem 0; text-align:center; }
+  .map img { max-width:100%; height:auto; border:10px solid #5c3f24; border-radius:4px; box-shadow:0 0 40px rgba(0,0,0,.7); cursor:zoom-in; }
+  .map .cap { font-style:italic; color:#9a8a62; font-size:.85rem; margin-top:.6rem; }
+
+  /* ---------- DESTINATIONS ---------- */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.2rem; }
+  a.card { display:block; text-decoration:none; color:inherit; border:2px solid #b89455; background:rgba(20,14,9,.5);
+    padding:1.3rem 1.4rem 1.5rem; box-shadow:3px 3px 0 rgba(0,0,0,.4); transition:transform .12s, box-shadow .12s, background .12s; }
+  a.card:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 rgba(0,0,0,.5); background:rgba(40,28,18,.7); }
+  a.card h3 { font-family:'Rye','Playfair Display',serif; color:#e8c877; font-size:1.35rem; margin:0 0 .4rem; line-height:1.1; }
+  a.card p { margin:0; font-size:.9rem; line-height:1.5; color:#cdbf9a; }
+  a.card .go { display:inline-block; margin-top:.7rem; font-size:.78rem; text-transform:uppercase; letter-spacing:2px; color:#b89455; }
+
+  footer { text-align:center; margin-top:3rem; padding-top:1.2rem; border-top:1px solid #5c4a2a; font-style:italic; font-size:.82rem; color:#9a8a62; }
+
+  /* ---------- PLACES: cards + popup ---------- */
+  .places-intro { text-align:center; font-family:'Rye','Playfair Display',serif; color:#e8c877; font-size:1.4rem; margin:1.6rem 0 1rem; }
+  .places-intro span { font-family:'Old Standard TT',serif; font-style:italic; font-size:.9rem; color:#9a8a62; }
+  .placegrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:.6rem; }
+  .placecard {
+    border:2px solid #5c3f24; background:rgba(20,14,9,.5); padding:.6rem .7rem; cursor:pointer;
+    transition:transform .1s, box-shadow .1s, background .1s, border-color .1s; position:relative;
+  }
+  .placecard:hover { transform:translateY(-2px); background:rgba(40,28,18,.85); border-color:#e8c877; box-shadow:0 4px 14px rgba(0,0,0,.45); }
+  .placecard h4 { font-family:'Playfair Display',serif; color:#e8c877; font-size:.98rem; margin:0 0 .15rem; line-height:1.1; }
+  .placecard .where { font-size:.66rem; text-transform:uppercase; letter-spacing:1px; color:#b89455; display:block; }
+  .placecard .peek { font-size:.74rem; color:#9a8a62; margin-top:.35rem; display:none; line-height:1.35; }
+  .placecard:hover .peek { display:block; }
+
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(10,7,4,.82); display:none; align-items:center; justify-content:center;
+    z-index:50; padding:1.2rem; backdrop-filter:blur(2px);
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    max-width:560px; width:100%; max-height:82vh; overflow:auto;
+    background:#2c2118; border:3px double #b89455; border-radius:4px; padding:1.6rem 1.8rem;
+    box-shadow:0 0 50px rgba(0,0,0,.7); position:relative;
+  }
+  .modal h3 { font-family:'Rye','Playfair Display',serif; color:#e8c877; font-size:1.7rem; margin:.2rem 0 .1rem; line-height:1.05; }
+  .modal .where { font-size:.72rem; text-transform:uppercase; letter-spacing:2px; color:#b89455; margin-bottom:.8rem; display:block; }
+  .modal p { font-size:.96rem; line-height:1.6; color:#ecdfbf; margin:0; }
+  .modal .x { position:absolute; top:.6rem; right:.9rem; font-size:1.6rem; color:#b89455; cursor:pointer; line-height:1; background:none; border:none; }
+  .modal .x:hover { color:#e8c877; }
+  .modal .cm-portrait { width:120px; height:auto; float:right; margin:.2rem 0 .6rem .9rem; border:2px solid #b89455; border-radius:3px; }
+  .modal #cm-body p { font-size:.94rem; line-height:1.55; color:#ecdfbf; margin:0 0 .7rem; }
+  .modal #cm-body .cm-sheet { font-size:.84rem; color:#cdbf9a; border-top:1px solid #5c4a2a; padding-top:.6rem; clear:both; }
+  .modal #cm-body .cm-link { margin:.5rem 0 0; }
+  .modal #cm-body .cm-link a { color:#e8c877; text-decoration:none; font-size:.82rem; letter-spacing:1px; text-transform:uppercase; }
+  .modal #cm-body .cm-link a:hover { color:#fff; }
+  .modal #cm-body .cm-voice { font-style:italic; font-size:.78rem; color:#b89455; letter-spacing:1.5px; text-transform:uppercase; margin:0 0 .6rem; }
+  #charcards { display:flex; flex-wrap:wrap; justify-content:center; gap:.6rem; }
+  #charcards .placecard { width:210px; }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="super">Laramie City · Wyoming Territory · Spring 1868</div>
+    <h1>The Last Ten Days of Laramie</h1>
+    <p class="motto">In ten days, the Union Pacific Railroad Commissioner arrives in Laramie to decide whether the town will be granted the great roundhouse and the rail infrastructure that comes with it. That decision will mark a turning point for Laramie — and determine its fate.</p>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ============ TRAIN COUNTER ============ -->
+    <div class="counter">
+      <div class="scene">
+        <div class="sun"></div>
+        <div class="hills"></div>
+        <!-- Laramie skyline -->
+        <svg class="town" viewBox="0 0 160 74" preserveAspectRatio="xMaxYMax meet">
+          <g fill="#1c1424">
+            <rect x="6"  y="40" width="22" height="34"/>
+            <rect x="30" y="30" width="16" height="44"/>
+            <polygon points="30,30 38,20 46,30"/>
+            <rect x="50" y="44" width="26" height="30"/>
+            <rect x="80" y="26" width="20" height="48"/>
+            <rect x="86" y="8" width="6" height="20"/>           <!-- church steeple -->
+            <polygon points="80,26 90,12 100,26"/>
+            <rect x="104" y="46" width="30" height="28"/>
+            <rect x="120" y="50" width="34" height="24"/>        <!-- depot -->
+            <polygon points="118,50 137,40 156,50"/>
+          </g>
+          <g fill="#e8c877" opacity=".7">
+            <rect x="12" y="48" width="4" height="5"/><rect x="20" y="48" width="4" height="5"/>
+            <rect x="35" y="40" width="4" height="5"/><rect x="58" y="52" width="4" height="5"/>
+            <rect x="86" y="36" width="4" height="6"/><rect x="126" y="56" width="5" height="6"/>
+          </g>
+        </svg>
+        <div class="ground"></div>
+        <div class="rail"></div>
+        <div class="ties"></div>
+
+        <!-- day markers -->
+        <div class="stops" id="stops"></div>
+        <div class="depot-lbl">LARAMIE</div>
+
+        <!-- locomotive -->
+        <div class="loco">
+          <span class="smoke s1" style="left:30px;top:-6px;"></span>
+          <span class="smoke s2" style="left:28px;top:-6px;"></span>
+          <span class="smoke s3" style="left:26px;top:-6px;"></span>
+          <svg width="150" height="78" viewBox="0 0 150 78">
+            <g>
+              <!-- cab -->
+              <rect x="6" y="20" width="34" height="30" rx="3" fill="#241a12"/>
+              <rect x="12" y="26" width="12" height="12" fill="#3a2c1a"/>
+              <!-- boiler -->
+              <rect x="38" y="30" width="74" height="22" rx="11" fill="#1c140d"/>
+              <rect x="38" y="18" width="22" height="14" rx="3" fill="#241a12"/>  <!-- cab roof front -->
+              <!-- dome -->
+              <circle cx="70" cy="30" r="7" fill="#2a1f14"/>
+              <!-- smokestack (balloon) -->
+              <path d="M96 30 L92 14 Q92 8 102 8 Q112 8 112 14 L108 30 Z" fill="#1c140d"/>
+              <!-- headlamp -->
+              <rect x="112" y="30" width="10" height="12" rx="2" fill="#2a1f14"/>
+              <rect x="115" y="33" width="5" height="6" fill="#ffe6a8"/>
+              <!-- cowcatcher -->
+              <polygon points="112,52 134,52 122,64 112,64" fill="#1c140d"/>
+              <!-- frame -->
+              <rect x="6" y="50" width="120" height="6" fill="#0f0a06"/>
+              <!-- wheels -->
+              <circle cx="26" cy="60" r="11" fill="#0f0a06" stroke="#3a2c1a" stroke-width="2"/>
+              <circle cx="58" cy="60" r="11" fill="#0f0a06" stroke="#3a2c1a" stroke-width="2"/>
+              <circle cx="90" cy="62" r="8" fill="#0f0a06" stroke="#3a2c1a" stroke-width="2"/>
+              <circle cx="112" cy="62" r="8" fill="#0f0a06" stroke="#3a2c1a" stroke-width="2"/>
+              <!-- warm rim light -->
+              <rect x="38" y="30" width="74" height="3" rx="2" fill="#b9763a" opacity=".5"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- readout (countdown) -->
+        <div class="readout">
+          <div class="count"><span class="bignum" id="bignum">10</span><span class="cunit" id="cunit">days remain</span></div>
+          <div class="sub" id="dayline">before the train</div>
+        </div>
+      </div>
+      <div class="strip">Each dawn the train draws nearer, and a new edition of <b>The Frontier Index</b> hits Front Street. Ten mornings, then the commissioner decides.</div>
+    </div>
+
+    <!-- ============ EDITIONS ============ -->
+    <h2 class="sect">The Frontier Index · Ten Daily Editions</h2>
+    <div style="text-align:center; margin:-.4rem 0 1.2rem;">
+      <a class="card" href="read.html?day=2" style="display:inline-block; max-width:560px; text-align:left;">
+        <h3>📰 Today's Edition — Day Two</h3>
+        <p>Cheyenne lumber on the morning train, a Round-House to honor Clara Boothe, a court of title called before Judge Moyer, and Marshal Moyer to investigate the death of Boothe.</p>
+        <span class="go">Read today's paper →</span>
+      </a>
+    </div>
+    <div class="editions" id="editions"></div>
+
+    <!-- ============ THE PLAYERS — PLAYER BACKGROUNDS ============ -->
+    <h2 class="sect">The Players</h2>
+    <p style="text-align:center;color:#9a8a62;font-style:italic;margin:-.6rem auto 1rem;max-width:660px;">
+      Who rode into Laramie — the player characters in their own right. Tap a card for the full background.</p>
+    <div class="placegrid" id="charcards"></div>
+
+    <!-- ============ PLAYER'S ACCOUNTINGS ============ -->
+    <h2 class="sect">Player's Accountings</h2>
+    <p style="text-align:center;color:#9a8a62;font-style:italic;margin:-.6rem auto 1rem;max-width:660px;">
+      The company's own log of each game session, recorded plainly.
+      A session may cover one in-world day, several, or only part of one.</p>
+    <div class="cards" id="accountings"></div>
+
+    <!-- ============ MAP ============ -->
+    <h2 class="sect">The Town</h2>
+    <div class="map">
+      <a href="laramie_map.png" target="_blank" rel="noopener">
+        <img src="laramie_map.png" alt="Map of Laramie City, Wyoming Territory, 1868">
+      </a>
+      <div class="cap">Click the map to view it full size. Then explore the town below — tap any place to hear what folks say about it.</div>
+    </div>
+
+    <div class="places-intro">Notable Places <span>— click a card for the word around town</span></div>
+    <div class="placegrid" id="placegrid"></div>
+
+    <!-- ============ DESTINATIONS ============ -->
+    <h2 class="sect">Counters &amp; Comforts</h2>
+    <div class="cards">
+      <a class="card" href="board/">
+        <h3>⚔ The Battle Board</h3>
+        <p>Open a peer-to-peer tabletop, lay down the frontier grid, and move every soul on the map. The host keeps the state; no account or cloud ledger required.</p>
+        <span class="go">Open the table →</span>
+      </a>
+      <a class="card" href="quartermaster-insert.html">
+        <h3>Ivinson &amp; Co. General Store</h3>
+        <p>Arms, powder, blades, explosives, and one Gnomish marvel — every implement of work and violence, with prices and particulars for the careful buyer.</p>
+        <span class="go">Browse the goods →</span>
+      </a>
+      <a class="card" href="saloon-bill-of-fare.html">
+        <h3>The Bucket of Blood — Bill of Fare</h3>
+        <p>The tap, the bottle, and the comforts of vice. Every drink carries a boon and a bane both.</p>
+        <span class="go">Step up to the bar →</span>
+      </a>
+      <a class="card" href="rules.html">
+        <h3>The Rules of the Game</h3>
+        <p>How Laramie differs from the book: money &amp; coin, drink &amp; the Cups Track, wounds, guns &amp; range, cover, and frontier knacks.</p>
+        <span class="go">Learn the rules →</span>
+      </a>
+      <a class="card" href="dice.html">
+        <h3>🎲 Roll the Bones</h3>
+        <p>Step up to the felt and turn the dice loose — a full set of 3D rolling bones with modifiers, advantage, and a running tally. Or pick any weapon from the Front Street arsenal and roll the attack: to-hit, damage, crits, and all.</p>
+        <span class="go">Roll the dice →</span>
+      </a>
+    </div>
+
+    <footer>
+      The Frontier Index is published daily upon Front Street. &nbsp;Truth, Progress, and the Iron Promise.<br>
+      A tabletop campaign set in Laramie City, Wyoming Territory, 1868.
+    </footer>
+
+  </div>
+
+<script>
+  const TOTAL = 10;
+  const CAMPAIGN_DAY = 2;                       // the latest day actually played/published
+  const EDITIONS = {                            // day -> paper file (add a line per new day)
+    1: 'frontier-index-broadsheet.html',
+    2: 'frontier-index-day-02.html'
+  };
+  const READER = 'read.html';                   // the shell that frames each paper
+
+  const stops  = document.getElementById('stops');
+  const ed     = document.getElementById('editions');
+  const bignum = document.getElementById('bignum');
+  const cunit  = document.getElementById('cunit');
+  const sub    = document.getElementById('dayline');
+
+  // day markers — a fuse burning toward Laramie; published days open the reader
+  for (let i = 1; i <= TOTAL; i++) {
+    const cls = i < CAMPAIGN_DAY ? 'spent' : (i === CAMPAIGN_DAY ? 'now' : 'left');
+    const el = EDITIONS[i] ? document.createElement('a') : document.createElement('div');
+    el.className = 'stop ' + cls + (EDITIONS[i] ? ' pub' : '');
+    if (EDITIONS[i]) { el.href = READER + '?day=' + i; el.title = 'Read Day ' + i; }
+    el.innerHTML = '<div class="dot"></div><div class="lbl">' + i + '</div>';
+    stops.appendChild(el);
+  }
+
+  // countdown readout for the current campaign day
+  const remain = TOTAL - CAMPAIGN_DAY + 1;
+  if (remain <= 0) {
+    bignum.textContent = '0'; cunit.textContent = 'the train arrives';
+    sub.textContent = 'the commissioner decides today';
+  } else if (remain === 1) {
+    bignum.textContent = '1'; cunit.textContent = 'day remains';
+    sub.textContent = 'the last day — the commissioner rides at dawn';
+  } else {
+    bignum.textContent = remain; cunit.textContent = 'days remain';
+    sub.textContent = (CAMPAIGN_DAY === 1)
+      ? 'before the train — the commissioner has boarded at Cheyenne'
+      : 'before the train';
+  }
+
+  // editions grid — published days open the reader, the rest are forthcoming
+  for (let i = 1; i <= TOTAL; i++) {
+    if (EDITIONS[i]) {
+      const a = document.createElement('a');
+      a.className = 'ed live'; a.href = READER + '?day=' + i;
+      a.innerHTML = '<span class="d">' + i + '</span><span class="tag">Read</span>';
+      ed.appendChild(a);
+    } else {
+      const div = document.createElement('div');
+      div.className = 'ed locked';
+      div.innerHTML = '<span class="d">' + i + '</span><span class="tag">Forthcoming</span>';
+      ed.appendChild(div);
+    }
+  }
+
+  // ===== Player's Accountings — one entry per GAME SESSION (a session may span any number of in-world days) =====
+  const SESSIONS = [
+    { n:1, title:'The Town Meeting', date:'Played 27 Jun 2026 · in-world Day 1',
+      blurb:'Mining warnings in the Medicine Bow, a body carted to the Wide Grave, the town meeting and the deed, and an alley fight as the schoolteacher left.' },
+  ];
+  const acc = document.getElementById('accountings');
+  SESSIONS.slice().reverse().forEach(s => {
+    const a = document.createElement('a');
+    a.className = 'card'; a.href = READER + '?session=' + s.n;
+    a.innerHTML = '<h3>📓 Session ' + s.n + ' — ' + s.title + '</h3>' +
+                  '<p>' + s.blurb + '</p>' +
+                  '<span class="go">' + s.date + ' →</span>';
+    acc.appendChild(a);
+  });
+
+  /* ===== Notable Places: cards + popup (common knowledge only) ===== */
+  const PLACES = [
+    {n:"The Depot", w:"South 1st Street · the tracks", t:"The loudest place in the Territory and the door everyone comes through. Steam, coal smoke, and a chalkboard of arrival times that mean nothing. Whatever Laramie needs — whiskey, lumber, payroll, trouble — steps off here. And in ten days, so does the man who decides the town's fate."},
+    {n:"Front Street", w:"Along the rails", t:"The raw main drag, all mud and boardwalk and false fronts. Saloons, the Tenderloin, and most of the gunplay. Folks say more men have died on Front Street than in any war they fought in."},
+    {n:"The Bucket of Blood", w:"Front Street · saloon", t:"The Moyer brothers' place, and the busiest in town. The whiskey's honest and the cards mostly are too — but you don't make trouble here, and you don't go in the back room unless you're asked. Deputy Steve Long is often about, smiling."},
+    {n:"Keystone Hall", w:"Off Grand Avenue", t:"The biggest room in Laramie and the only one built for a crowd. Town meetings, Saturday dances, Sunday preaching, and now and again a hanging — the same floor, swept between. If something matters to the whole town, it happens here."},
+    {n:"Grand Avenue", w:"The respectable side", t:"The half of town trying to look like it'll be here in twenty years. Painted storefronts, the bank-store, a church foundation, a schoolhouse going up. Folks on Grand Avenue talk about Laramie's future as if it's already settled."},
+    {n:"Ivinson & Co.", w:"Grand Avenue · store & bank", t:"The store and the bank in one — there's no other. Buy your goods, weigh your gold dust on the brass scale, change your coin, or ask Edward Ivinson for credit. He keeps an honest scale and a long memory, and he knows who's bought rope, ammunition, or a one-way ticket."},
+    {n:"The Mission of Saint Paylor", w:"Edge of the respectable district", t:"The stone Paylorian church, older-looking than the town around it. Father Dominic preaches hard against sin and sorcery, and folks mostly approve — Laramie has enough of both. There's a burned stake in the churchyard from the witch they put to the fire. People walk past it quick and don't say much."},
+    {n:"Church of Saint Cuthbert", w:"Grand Avenue · pledged", t:"Not built yet — a cornerstone, a fund, and a promise. Reverend Hoyt preaches Sundays at Keystone Hall until the walls go up. A gentler sort of faith than the Mission's, folks say, and a gentler sort of man — the kind who'll bury a stranger and mean the words."},
+    {n:"The Schoolhouse", w:"Eastern survey blocks", t:"Half-built and already the pride of half the town and the folly of the other half. Miss Hartley teaches the children among the sawhorses, glass windows coming on the next train. Mrs. Ivinson's project. Whether it'll still be standing after the railroad draws its lines, nobody likes to ask."},
+    {n:"Fort Sanders", w:"Two miles south", t:"The Army post — soldiers, supplies, and the only real law for a hundred miles, when it bothers to ride in. Folks send their grievances there in writing and wait. The fort watches the town, the trail, and the Indians, in about that order of interest."},
+    {n:"The Laramie River & Spring Creek", w:"West of town", t:"The water everyone depends on. Runs high and cold in the spring, soft at the crossings. People lived along the creek before the rails came, and some still do. Good country for an ambush."},
+    {n:"The Medicine Bow Mountains", w:"On the horizon", t:"Timber camps, mining claims, and grizzly bears with no opinion of your business. The railroad's tie-cutters work the slopes; the diggers work the creeks for color. Go up alone and the mountains will keep you."},
+    {n:"The Wide Grave", w:"Outside town, northeast", t:"The pit where the dead go when no one will pay for better — the murdered, the hanged, the nameless, all together. Folks speak of it low. \"End up in the Wide Grave\" is the worst thing one man can wish another in Laramie."},
+    {n:"The Proposed Depot Site", w:"South of Front Street", t:"Everyone knows the great roundhouse is meant to rise here — four blocks of it, machine shops and all — if the railroad keeps its promise. Which means everyone also knows the land just got dear, and the deeds to it are worth killing for."},
+    {n:"The Town of Wyoming", w:"15 miles north · abandoned", t:"The last end-of-track town, dead these few weeks. Three thousand souls one month, empty canvas and leaning false fronts the next, the moment the rails moved on. Every soul in Laramie has seen it or heard of it, and every one knows it's what this town becomes if the depot goes to Cheyenne."}
+  ];
+
+  const grid = document.getElementById('placegrid');
+  const overlay = document.getElementById('placemodal');
+  const mTitle = document.getElementById('pm-title');
+  const mWhere = document.getElementById('pm-where');
+  const mText  = document.getElementById('pm-text');
+
+  PLACES.forEach(function (p) {
+    const c = document.createElement('div');
+    c.className = 'placecard';
+    c.innerHTML = '<h4>' + p.n + '</h4><span class="where">' + p.w + '</span>' +
+                  '<div class="peek">' + p.t.split('. ')[0] + '…</div>';
+    c.addEventListener('click', function () {
+      mTitle.textContent = p.n; mWhere.textContent = p.w; mText.textContent = p.t;
+      overlay.classList.add('open');
+    });
+    grid.appendChild(c);
+  });
+
+  function closeModal() { overlay.classList.remove('open'); }
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  document.getElementById('pm-close').addEventListener('click', closeModal);
+</script>
+
+<div class="modal-overlay" id="placemodal">
+  <div class="modal">
+    <button class="x" id="pm-close" aria-label="Close">&times;</button>
+    <h3 id="pm-title"></h3>
+    <span class="where" id="pm-where"></span>
+    <p id="pm-text"></p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="charmodal">
+  <div class="modal">
+    <button class="x" id="cm-close" aria-label="Close">&times;</button>
+    <h3 id="cm-name"></h3>
+    <span class="where" id="cm-line"></span>
+    <div id="cm-body"></div>
+  </div>
+</div>
+
+<script>
+  /* ===== The Company — player backgrounds (characters only; no real names) ===== */
+  document.addEventListener('DOMContentLoaded', function () {
+    const CHARACTERS = [
+      {
+        name: 'Stinky Pete',
+        line: 'Petr Ragnarsson · Dwarf Fighter · Guild Artisan',
+        portrait: 'stinky-pete.png',
+        blurb: `A dwarf miner of the old country with a mortgaged claim he is sure holds silver.`,
+        own_words: true,
+        bio: [
+          `Petr (aka Stinky Pete) arrived in Laramie this spring, with a deed to a prime mining claim in the mountains southwest of town. There's silver in them there hills! Though there's no silver removed yet, Petr is descended from a long line of miners back in the old country, is an expert in rock formations and knows a line of silver bearing ore when he sees one.`,
+          `One small hitch though is that he has some debts to pay to the goblin banker back east, Fenzick and friends, and the claim is mortgaged to them. He has a business plan and is sure that this will never come back to haunt him.`,
+          `His alignment is lawful neutral, bordering on evil. He sees his claim as completely valid and will not suffer lazy natives or trespassers on his land.`,
+          `He's aligned with the Iron Road Dwarves — the foremen that work for Union Pacific. Amos Holt is the lead foreman and railroad tie contractor, has been in the woods with Pete cutting timber, and they do NOT like the first nations. He's also friends with Lanq-wi, the payroll master of the Iron Road, who talks highly of the madam at the Bloody Bucket.`
+        ],
+        sheet: `Fighter (now 2nd level) · STR 17, INT 15 · proficient with carpenter's, smith's, and tinker's tools · darkvision and dwarven poison-resilience · a war pick and three sticks of dynamite.`,
+        sheet_pdf: 'sheet-stinky-pete.pdf'
+      },
+      {
+        name: 'John Tunstall',
+        line: 'Dwarf Gunslinger · Demolitions for Hire',
+        blurb: `A dwarf who works explosives for hire and tells himself he is a good man.`,
+        bio: [
+          `John Tunstall was raised in an orphanage back East, knowing nothing of his birth parents, under strict and abusive clergy. He came out of it with no love for religion and the good sense to keep quiet about it around the righteous. He ran off at eleven and lived on the streets.`,
+          `He found his way to the den of Ol' Bonney, a kindly man who took pity on street children — little food and no lodging, but a bandage, a scrap of bread, and a kind face. One quiet day Bonney was tinkering with an explosive device, and for his own reasons he showed the half-grown John how it worked. An apprenticeship began. Months later John came back to find the den empty, and never learned where Bonney had gone.`,
+          `Within a year he was earning with the trade, and he has moved West ever since, a step ahead of the law and the men he has crossed. He once took a job from labor leaders to break a workers' uprising: a few well-placed charges, a little stirring of the crowd, and public sympathy turned against the strikers. Their union died and his reputation grew. He has done honest work too — a few farms, a clerk's stool — and he will break a law, but he does not kill for hire.`,
+          `As a dwarf he understands rock, structure, and load by instinct: where a seam wants to split, how a thing carries weight and therefore how it comes down. He came to Laramie drawn by the noise around the railroad, figuring there would be a use for what he knows.`
+        ],
+        sheet: `Gunslinger · DEX 17, CHA 14 · proficient with very nearly every firearm ever made · darkvision and poison-resilience · three sticks of dynamite, blasting powder and fuse, a Colt Army .44, and a miner's pick.`,
+        sheet_pdf: 'sheet-john-tunstall.pdf'
+      },
+      {
+        name: 'Nickles',
+        line: `Sterling "Ten" Nickles · Halfling Pugilist`,
+        blurb: `Eighteen, raised in the brothel, the boy who carts the dead to the Wide Grave.`,
+        own_words: true,
+        bio: [
+          `Born "Sterling" to the magnificent "Jugs Judy" and 2 Dollar Jack, Nickels grew up at the Bottom of the Bucket whorehouse. He learned that the total of a man is his pride and coin.`,
+          `Since his mother died of consumption, he fights anyone who besmirches her reputation as the best whore Laramie has ever seen. He is looking for his shot to make Laramie (and Jack) proud.`
+        ],
+        sheet: `Pugilist (2nd level) · STR 17, CON 16 · a bare-knuckle brawler (Iron Chin, Moxie) · proficient with an herbalism kit, a deck of cards, and land vehicles — that wagon · speaks Common Sign Language.`,
+        sheet_pdf: 'sheet-nickles.pdf'
+      },
+      {
+        name: 'Billy Bones',
+        line: `Orc Fighter · the Bank's Troubleshooter`,
+        arriving: true,
+        own_words: true,
+        blurb: `An assumed name and a bank's badge. Rode with the elves once; now he collects for the money-men.`,
+        bio: [
+          `"Billy Bones is the name. Used to go by another handle, but I left all that behind in Arkansas after the war, and ain't going back. Spent me a couple years riding with the elves down New Mexico way, till we captured a fella worked for the money-men in Boston, and he promised to put in a good word with his bosses if I saved his skin.`,
+          `So these days I work for Finzix and Friends. They got big plans for the West, and my job's making sure it all comes off without a hitch. Work with me, and you'll make friends in high places. Work against me, and... well, I know a smart fella like you wouldn't do a stupid thing like that."`
+        ],
+        sheet: `Fighter · DEX 17, CHA 14 · darkvision · proficient with revolvers, rifles and shotguns, and a set of thieves' tools · speaks Common, Goblin, and Elvish — the last from his riding days.`,
+        sheet_pdf: 'sheet-billy-bones.pdf'
+      }
+    ];
+
+    const cgrid = document.getElementById('charcards');
+    const ov = document.getElementById('charmodal');
+    const nm = document.getElementById('cm-name');
+    const ln = document.getElementById('cm-line');
+    const bd = document.getElementById('cm-body');
+
+    CHARACTERS.forEach(function (c) {
+      const card = document.createElement('div');
+      card.className = 'placecard';
+      card.innerHTML = '<h4>' + c.name + '</h4><span class="where">' + c.line + '</span>' +
+                       '<div class="peek">' + c.blurb + '</div>';
+      card.addEventListener('click', function () {
+        nm.textContent = c.name;
+        ln.textContent = c.line + (c.arriving ? ' · arriving next session' : '');
+        bd.innerHTML = (c.own_words ? '<p class="cm-voice">In the player’s own words</p>' : '') +
+                       (c.portrait ? '<img class="cm-portrait" src="' + c.portrait + '" alt="' + c.name + '">' : '') +
+                       c.bio.map(function (p) { return '<p>' + p + '</p>'; }).join('') +
+                       '<p class="cm-sheet"><b>By the sheet:</b> ' + c.sheet + '</p>' +
+                       (c.sheet_pdf ? '<p class="cm-link"><a href="' + c.sheet_pdf + '" target="_blank" rel="noopener">📄 View full character sheet →</a></p>' : '');
+        ov.classList.add('open');
+      });
+      cgrid.appendChild(card);
+    });
+
+    function closeC() { ov.classList.remove('open'); }
+    ov.addEventListener('click', function (e) { if (e.target === ov) closeC(); });
+    document.getElementById('cm-close').addEventListener('click', closeC);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeC(); });
+  });
+</script>
+</body>
+</html>

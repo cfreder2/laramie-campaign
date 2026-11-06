@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Frontier Index — Laramie City, W.T.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
+
+  body {
+    margin: 0;
+    padding: 2rem;
+    background: #2b2620;
+    font-family: 'Old Standard TT', serif;
+  }
+
+  .paper {
+    max-width: 1080px;
+    margin: 0 auto;
+    background: #e8dcc0;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(120,90,40,0.10), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(120,90,40,0.14), transparent 55%),
+      radial-gradient(ellipse at center, rgba(80,60,20,0.04), transparent 70%);
+    padding: 2.5rem 3rem 3rem;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    color: #2a2018;
+    position: relative;
+  }
+
+  .paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+
+  .masthead {
+    text-align: center;
+    border-bottom: 4px double #2a2018;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+  .masthead h1 {
+    font-family: 'UnifrakturCook', 'Playfair Display', serif;
+    font-size: 5.2rem;
+    margin: 0.2rem 0 0;
+    line-height: 0.95;
+    letter-spacing: 2px;
+  }
+  .masthead .motto {
+    font-style: italic;
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+  .topline, .botline {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-top: 1px solid #2a2018;
+    border-bottom: 1px solid #2a2018;
+    padding: 0.25rem 0;
+  }
+  .topline { border: none; font-weight: 700; }
+  .dateline {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #2a2018;
+    border-bottom: 3px double #2a2018;
+    padding: 0.3rem 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.2rem;
+  }
+
+  .columns {
+    column-count: 3;
+    column-gap: 1.8rem;
+    column-rule: 1px solid #9a8a68;
+    text-align: justify;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .columns.two { column-count: 2; }
+
+  h2.head {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    text-align: center;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    margin: 0 0 0.1rem;
+    text-transform: uppercase;
+    break-after: avoid;
+  }
+  h3.subhead {
+    text-align: center;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.95rem;
+    margin: 0 0 0.5rem;
+    border-bottom: 1px solid #9a8a68;
+    padding-bottom: 0.4rem;
+    break-after: avoid;
+  }
+  .kicker {
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-top: 1rem;
+  }
+  .article { margin-bottom: 1.1rem; break-inside: avoid-column; }
+  .article p { margin: 0 0 0.6rem; }
+  .article p:first-of-type::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    float: left;
+    line-height: 0.7;
+    padding: 0.1rem 0.35rem 0 0;
+    font-weight: 900;
+  }
+  .byline { font-style: italic; text-align: center; font-size: 0.82rem; margin-bottom: 0.5rem; }
+
+  .rule-orn {
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0.6rem 0;
+    letter-spacing: 4px;
+  }
+
+  /* Advertisement box */
+  .advert {
+    border: 3px double #2a2018;
+    padding: 0.8rem 1rem 1rem;
+    margin: 0.4rem 0 1.1rem;
+    text-align: center;
+    break-inside: avoid;
+    background: rgba(160,130,70,0.08);
+  }
+  .advert h4 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.35rem;
+    margin: 0.2rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .advert .estd { font-style: italic; font-size: 0.78rem; margin-bottom: 0.5rem; }
+  .advert table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 0.4rem 0;
+    text-align: left;
+  }
+  .advert table td { padding: 1px 0; border-bottom: 1px dotted #9a8a68; }
+  .advert table td.price { text-align: right; font-weight: 700; white-space: nowrap; }
+  .advert .depthead {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.74rem;
+    border-bottom: 1.5px solid #2a2018;
+    padding-top: 0.5rem;
+    display: block;
+    text-align: left;
+  }
+  .advert .flourish { font-size: 0.78rem; font-style: italic; margin-top: 0.6rem; }
+
+  .notice {
+    border-top: 1px solid #2a2018;
+    border-bottom: 1px solid #2a2018;
+    padding: 0.5rem 0;
+    margin: 0.6rem 0;
+    font-size: 0.85rem;
+    break-inside: avoid;
+  }
+  .notice b { text-transform: uppercase; letter-spacing: 1px; }
+
+  .obit { font-size: 0.85rem; }
+  .obit b { font-variant: small-caps; letter-spacing: 0.5px; }
+
+  .quote-pull {
+    font-style: italic;
+    font-size: 1.05rem;
+    text-align: center;
+    border-top: 1px solid #9a8a68;
+    border-bottom: 1px solid #9a8a68;
+    padding: 0.5rem 0;
+    margin: 0.6rem 0;
+  }
+
+  /* ---------- RESPONSIVE / MOBILE ---------- */
+  /* Use a fluid masthead so the title never overflows narrow screens */
+  .masthead h1 { font-size: clamp(2.4rem, 12vw, 5.2rem); }
+
+  @media (max-width: 860px) {
+    body { padding: 1rem 0.5rem; }
+    .paper { padding: 1.4rem 1.2rem 2rem; }
+    .columns { column-count: 2; column-gap: 1.2rem; }
+    .topline, .dateline { flex-wrap: wrap; gap: 0.2rem 1rem; justify-content: center; text-align: center; }
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 0.5rem 0.3rem; }
+    .paper { padding: 1rem 0.9rem 1.6rem; }
+    /* single column reads properly on a phone */
+    .columns { column-count: 1; }
+    .lead-wrap { margin-bottom: 0.8rem; }
+    h2.head { font-size: 1.3rem; }
+    h2.lead { font-size: 1.6rem; }
+    .masthead .motto { font-size: 0.85rem; }
+    .topline { font-size: 0.65rem; letter-spacing: 1px; }
+    .dateline { font-size: 0.72rem; }
+    .advert { padding: 0.7rem 0.8rem; }
+    .advert table { font-size: 0.8rem; }
+    .article p:first-of-type::first-letter { font-size: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="paper">
+
+  <div class="topline">
+    <span>Published Weekly</span>
+    <span>Wyoming Territory</span>
+    <span>Price Two Cents</span>
+  </div>
+
+  <div class="masthead">
+    <h1>The Frontier Index</h1>
+    <div class="motto">— Truth, Progress, and the Iron Promise —</div>
+  </div>
+
+  <div class="dateline">
+    <span>Vol. I &nbsp;·&nbsp; No. VII</span>
+    <span>Laramie City, W.T. &nbsp;—&nbsp; Spring, A.D. 1868</span>
+    <span>Single Sheet</span>
+  </div>
+
+  <div class="columns">
+
+    <div class="article">
+      <h2 class="head">A Reckoning in Ten Days</h2>
+      <h3 class="subhead">The Commissioner Comes, and With Him the Whole of Our Fortune</h3>
+      <p>Word is now confirmed upon the wire from Cheyenne that the Union Pacific's appointed Commissioner shall arrive in Laramie City within the span of ten days, bearing in his coat the determination that shall fix forever the seat of the great Repair Depot, the Round-House, and the Machine Works of the Western Division.</p>
+      <p>Let no citizen mistake the magnitude of the hour. A Round-House is no tent to be struck and carried off upon the next morning's freight. It is masonry and iron, the costliest structure the Territory has yet beheld, and the railroad does not raise such a monument save where it means to remain a hundred years. Whither the Depot falls, there falls permanence; and whence it is withheld, there the prairie shall in time reclaim what the surveyor's stake pretended to claim.</p>
+      <p>It is the plain estimation of this paper that Laramie City stands upon a knife's edge. Cheyenne covets that which we have laboured to deserve. What transpires in these ten days — whether order prevail or disorder; whether the stranger find here a city of laws or a den of pistols — shall be read in the Commissioner's countenance, and writ thereafter in the ledger of history.</p>
+    </div>
+
+    <div class="rule-orn">❖ ❖ ❖</div>
+
+    <div class="article">
+      <h2 class="head">All Citizens Summoned</h2>
+      <h3 class="subhead">A Meeting at Keystone Hall, This Evening at Sundown</h3>
+      <p>Mr. Edward Ivinson, merchant and banker of Grand Avenue, has called the whole of the citizenry to assemble at Keystone Hall this very evening, that the town might counsel together upon its preparedness, upon the vexed question of certain land-titles, and upon the keeping of good order in the days now dwindling before us.</p>
+      <p>"What is decided in the next ten days," Mr. Ivinson informed this paper, "cannot afterward be undecided. I had sooner we decide it together in Keystone Hall than discover it decided for us by events."</p>
+      <p>Marshal Moyer and Division Superintendent Croft are both expected to address the assembly. The doors open at sundown. Let no household be unrepresented.</p>
+    </div>
+
+    <div class="notice">
+      <b>Notice of Deed Review.</b> &nbsp;The office of Justice of the Peace A. Moyer gives notice that <b>three</b> properties within the city survey-grid stand under formal review. Affected parties are urged to present documentation at the Justice's office without delay. The process is represented as routine.
+    </div>
+
+    <div class="article">
+      <h2 class="head">Deputy Long Disperses<br>River Marauders</h2>
+      <h3 class="subhead">The Survey Line Kept Whole; No Godly Blood Spilt</h3>
+      <p>The citizens of Laramie City are indebted this week to the prompt action of Deputy Steve Long, who, riding the eastern line in his office as territorial officer, came upon a party of Arapaho — some eight or twelve in number — unlawfully encamped within the survey corridor near Spring Creek, taking fish from the waters and obstructing the labours of the railroad.</p>
+      <p>When the contractor's foreman, Mr. Amos Holt, bid them disperse, the party is said to have refused and to have shown their weapons. Deputy Long thereupon intervened, and by his own account "spoke to them plain — that the railroad does not go around, it goes through, and the law goes the same."</p>
+      <p>The party withdrew without further mischief. "Steve Long is the reason this town sleeps of a night," said Marshal Moyer. This paper observes that the godless and obstinate elements which would deny godly civilization its appointed progress have found in Deputy Long a man not easily discouraged.</p>
+    </div>
+
+    <div class="rule-orn">☩ ☩ ☩</div>
+
+    <div class="article">
+      <h2 class="head">The Wages of Sorcery</h2>
+      <h3 class="subhead">A Conjuress Given to the Flame — The Mission of Saint Paylor Acts Where the Law Keeps Silent</h3>
+      <p>It falls to this paper to record an event at once terrible and, by the lights of those who performed it, held to be necessary. On Thursday last the clergy of the Mission of Saint Paylor, under the hand of Father Dominic, did try, condemn, and deliver unto the fire the woman who called herself <i>Madame Esmé</i> — of no fixed origin, lately employed in the entertainments of a Front Street house — upon the charge of witchcraft and the practice of the forbidden arts.</p>
+      <p>The Territory, in keeping with the ordinances the Order upholds, suffers no practitioner of magic to dwell among the faithful; and where the civil law is yet too young and too occupied to act, the Mission has taken the office upon itself. So it was done.</p>
+      <p>Witnesses are not agreed upon what the woman did. Some say she made coin vanish and playing-cards obey her — the common tricks of any conjuror who works a saloon for silver. Others swear upon their souls that they saw a candle leap alight at her open palm, and heard a man's fortune told too nearly true to be the work of guessing. The distinction, Father Dominic holds, is one without a difference. "Whether the Adversary works through her power or through her cunning," he told this paper, "the door she opens is the same door. It must be shut — and shut where all may see it shut."</p>
+      <p>To that end the sentence was carried out in the open, and the stake, with its ashes, has been left standing before the church door, that no soul in Laramie City might mistake the gravity of the prohibition. This paper observed that not all who gathered watched to the end; some turned away, and a few were heard to weep. We render no judgment upon them, nor upon the Mission, but set the matter down as it occurred.</p>
+      <p>Let the lesson be taken as it is plainly meant: there is no welcome at the hearths of this city for those who traffic in powers that godly men are forbidden to hold. The wise will govern themselves accordingly.</p>
+    </div>
+
+    <!-- ===== GENERAL STORE ADVERTISEMENT ===== -->
+    <div class="advert">
+      <div class="estd">— Established A.D. 1867 —</div>
+      <h4>Ivinson &amp; Co.<br>General Store</h4>
+      <div class="estd">Grand Avenue · "If We Have Not Got It,<br>You Have Not Yet Need of It"</div>
+
+      <span class="depthead">Arms &amp; Iron</span>
+      <table>
+        <tr><td>Colt Army Revolver, .44</td><td class="price" data-price="goods.colt-army">$17</td></tr>
+        <tr><td>Colt Pocket Pistol</td><td class="price" data-price="goods.colt-navy">$11</td></tr>
+        <tr><td>Single-Barrel Shot-Gun</td><td class="price" data-price="goods.shotgun-single">$14</td></tr>
+        <tr><td>Double-Barrel Shot-Gun</td><td class="price" data-price="goods.shotgun-double">$26</td></tr>
+        <tr><td>Surplus Army Musket</td><td class="price" data-price="goods.musket">$9</td></tr>
+        <tr><td>Winchester Repeating Rifle*</td><td class="price" data-price="goods.winchester">$48</td></tr>
+        <tr><td>Derringer, Pocket</td><td class="price" data-price="goods.derringer">$8</td></tr>
+      </table>
+      <div style="font-size:0.68rem;text-align:left;font-style:italic;">*By special order from the East; one only in stock.</div>
+
+      <span class="depthead">Powder &amp; Cartridge</span>
+      <table>
+        <tr><td>Cartridges, box of 50</td><td class="price" data-price="goods.cartridges-50">$1.75</td></tr>
+        <tr><td>Powder, per lb.</td><td class="price" data-price="goods.powder-lb">60¢</td></tr>
+        <tr><td>Lead Ball &amp; Cap, per 100</td><td class="price" data-price="goods.ball-cap-100">$1</td></tr>
+        <tr><td>Shot-Gun Shells, per doz.</td><td class="price" data-price="goods.shells-doz">75¢</td></tr>
+      </table>
+
+      <span class="depthead">Blade &amp; Tool</span>
+      <table>
+        <tr><td>Bowie Knife</td><td class="price" data-price="goods.bowie">$2.50</td></tr>
+        <tr><td>Miner's Pick</td><td class="price" data-price="goods.miners-pick">$1.80</td></tr>
+        <tr><td>Pan, Gold-Washing</td><td class="price">90¢</td></tr>
+        <tr><td>Coil of Lariat Rope</td><td class="price" data-price="goods.lasso">$1.20</td></tr>
+        <tr><td>Axe, Felling</td><td class="price">$2.25</td></tr>
+      </table>
+
+      <span class="depthead">Marvel of the Age</span>
+      <table>
+        <tr><td>The Hesperus Self-Striking Pick&dagger;</td><td class="price" data-price="goods.hesperus">$225</td></tr>
+      </table>
+      <div style="font-size:0.68rem;text-align:left;font-style:italic;">&dagger;A Gnomish clockwork wonder — Laramie's first auto-pick. One only, by special order. Inquire within; serious men only.</div>
+
+      <span class="depthead">Provision &amp; Sundry</span>
+      <table>
+        <tr><td>Flour, per sack (50 lb.)</td><td class="price" data-price="goods.flour-sack">$3.50</td></tr>
+        <tr><td>Coffee, per lb.</td><td class="price" data-price="goods.coffee-lb">40¢</td></tr>
+        <tr><td>Bacon, per lb.</td><td class="price" data-price="goods.bacon-lb">25¢</td></tr>
+        <tr><td>Whiskey, the bottle</td><td class="price" data-price="goods.whiskey-bottle">$1</td></tr>
+        <tr><td>Stout Boots, the pair</td><td class="price" data-price="goods.boots">$4</td></tr>
+        <tr><td>Wool Blanket</td><td class="price" data-price="goods.blanket">$3</td></tr>
+        <tr><td>Saddle, stock</td><td class="price" data-price="goods.saddle">$32</td></tr>
+        <tr><td>Sound Saddle-Horse</td><td class="price" data-price="goods.horse">$45</td></tr>
+      </table>
+      <div class="flourish">Credit extended to men of good standing.<br>Gold dust weighed honest. — E. IVINSON, Prop.</div>
+    </div>
+
+    <div class="article">
+      <h2 class="head">The Banker's Corner</h2>
+      <div class="byline">Conducted by Mr. Edward Ivinson, Grand Avenue</div>
+      <p>Let us speak plainly of money, which is the tongue in which the future is written. The Round-House, should it fall to us, is no mere building but a perpetual engine: four hundred wages, paid monthly and spent among us, each dollar turning thrice before it quits the Territory.</p>
+      <p>I do not say this to set men gambling. I say it to set men building. He who holds ground near the Depot site this day holds a deed of another character than he held last autumn. Plant your roots. A city that credits its own future gives the stranger cause to credit it also.</p>
+      <p class="byline">— E. I.</p>
+    </div>
+
+    <!-- ===== BANKER'S CORNER — EXCHANGE RATES ===== -->
+    <div class="advert">
+      <h4 style="font-size:1.1rem;">This Week's<br>Exchange</h4>
+      <div class="estd">Posted at Ivinson &amp; Co., per the<br>U.S. Mint standard · Spring 1868</div>
+
+      <span class="depthead">Bullion, per Troy Ounce</span>
+      <table>
+        <tr><td>Fine Gold</td><td class="price" data-rate="exchange.gold-oz" data-fmt="dollar">$20.67</td></tr>
+        <tr><td>Fine Silver</td><td class="price" data-rate="exchange.silver-oz" data-fmt="dollar">$1.29</td></tr>
+        <tr><td>Copper (per lb.)</td><td class="price" data-rate="exchange.copper-lb" data-fmt="dollar">$0.21</td></tr>
+      </table>
+      <div style="font-size:0.7rem;text-align:left;font-style:italic;">Gold to silver, sixteen to one.</div>
+
+      <span class="depthead">Coin of the Realm</span>
+      <table>
+        <tr><td>Double Eagle (gold)</td><td class="price" data-rate="exchange.double-eagle" data-fmt="dollar">$20</td></tr>
+        <tr><td>Eagle (gold)</td><td class="price" data-rate="exchange.eagle" data-fmt="dollar">$10</td></tr>
+        <tr><td>Half Eagle</td><td class="price" data-rate="exchange.half-eagle" data-fmt="dollar">$5</td></tr>
+        <tr><td>Gold or Silver Dollar</td><td class="price" data-rate="exchange.dollar" data-fmt="dollar">$1</td></tr>
+        <tr><td>Two Bits (quarter)</td><td class="price">25&cent;</td></tr>
+        <tr><td>Dime &middot; Cent</td><td class="price">10&cent; &middot; 1&cent;</td></tr>
+      </table>
+
+      <span class="depthead">Exchange &amp; Assay</span>
+      <table>
+        <tr><td>Dust assayed to coin</td><td class="price"><span data-rate="exchange.assay-fee-pct" data-fmt="pct">5%</span> fee</td></tr>
+        <tr><td>Greenback paper, per $1</td><td class="price" data-rate="exchange.greenback-per-dollar" data-fmt="cents">72&cent;</td></tr>
+        <tr><td>Silver to gold coin</td><td class="price"><span data-rate="exchange.silver-to-gold-fee-pct" data-fmt="pct">1%</span> fee</td></tr>
+      </table>
+      <div class="flourish">Gold dust weighed honest upon a true scale.<br>Paper is paper. Coin is coin. — E. IVINSON</div>
+    </div>
+
+    <div class="rule-orn">✦</div>
+
+    <div class="article">
+      <h2 class="head">Of the Schoolhouse</h2>
+      <h3 class="subhead">Miss Hartley, Schoolmistress, Upon the Town's Conscience</h3>
+      <p>Miss Evangeline Hartley, lately of Cincinnati and newly appointed to the instruction of our youth, spoke with this paper concerning the school-building fund of Mrs. Jane Ivinson, to which she has pledged her services.</p>
+      <p>"The question is never whether children may learn," said she. "It is whether the grown folk about them believe they deserve to. Laramie City is deciding what it believes this very week." The foundation is already laid upon a lot near the eastern blocks; doors are looked for within eight weeks.</p>
+      <p>Mrs. Ivinson, asked her purpose, answered only: "Laramie must be worth the living in. That is what we build."</p>
+    </div>
+
+    <div class="quote-pull">"The iron road does not go around.<br>It goes through."</div>
+
+    <div class="article">
+      <h2 class="head">Upon the Matter<br>of Vigilance</h2>
+      <p>It is come to the notice of this paper that certain ranching interests of the county have undertaken what they style "citizen enforcement" — armed patrols, gatherings, and the keeping of lists of persons held undesirable. This paper does not impugn the intentions of such men as Mr. N. K. Boswell, whose devotion to order is not doubted.</p>
+      <p>Yet we would gently observe that Laramie City possesses lawful officers in the persons of Marshal Moyer and his deputies, and that with the Commissioner so near at hand, it is of the first importance that our city present to the stranger the face of Law — and not of the mob, nor of the rope.</p>
+    </div>
+
+    <div class="kicker">Local &amp; Particular</div>
+
+    <div class="article" style="font-size:0.86rem;">
+      <p><b>Lumber &amp; Lots.</b> &nbsp;Green lumber arrives daily upon the line, and not a board sits idle. Carpenters report work enough for twice their number. A city is being built in the space of weeks; let us pray it is built to last and not merely to sell.</p>
+    </div>
+
+    <div class="article" style="font-size:0.86rem;">
+      <p><b>Of the Weather.</b> &nbsp;The spring runoff has the Laramie River running high and the Spring Creek crossings soft. Travelers to the Medicine Bow are advised to ford with care and to mind the bears, which are lately woken and ill-tempered.</p>
+    </div>
+
+    <div class="kicker">Obituary</div>
+
+    <div class="article obit">
+      <p><b>Mrs. Clara Boothe</b>, of about one and fifty years, formerly of Ohio, was found deceased at her dwelling upon the survey-grid on the morning of the fourteenth of March last. The cause of Mrs. Boothe's death remains, at this writing, <i>unknown</i>; Marshal Con Moyer has assured this paper that his office conducts a full inquiry and that the matter shall be brought to the satisfaction of justice. Mrs. Boothe was known to her neighbours as a quiet and industrious woman who kept a fine garden. She leaves no family known within the Territory, and is interred without the city.</p>
+    </div>
+
+    <div class="article obit">
+      <p><b>Mr. August Reimer</b>, of eight and twenty years, of the railroad labouring crew, died of hurts taken in a fall at the Medicine Bow timber-works. The Company has tendered its condolences to his fellows.</p>
+    </div>
+
+    <div class="rule-orn">— ❖ —</div>
+
+    <div class="article" style="font-size:0.82rem;font-style:italic;text-align:center;">
+      <p>The Frontier Index is printed weekly upon Front Street. Notices, advertisements, and correspondence may be left at the Index office. The opinions herein are those of its editors and bind neither the Union Pacific Railroad nor the Territory of Wyoming.</p>
+    </div>
+
+  </div>
+</div>
+<script src="prices.js" defer></script>
+</body>
+</html>

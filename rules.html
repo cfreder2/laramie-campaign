@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Rules of the Game — The Last Ten Days of Laramie</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&family=Rye&display=swap');
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; padding:0 0 4rem; background:#1d160f; color:#ecdfbf; font-family:'Old Standard TT',serif;
+    background-image:radial-gradient(ellipse at 50% 0%, rgba(180,140,70,.10), transparent 55%); }
+  .wrap { max-width:920px; margin:0 auto; padding:0 1.2rem; }
+  header { text-align:center; padding:2.6rem 1rem 1.2rem; border-bottom:3px double #b89455; }
+  header .super { text-transform:uppercase; letter-spacing:6px; font-size:.76rem; color:#b89455; }
+  header h1 { font-family:'Rye','Playfair Display',serif; font-size:clamp(2.2rem,6vw,3.8rem); margin:.4rem 0 .1rem; color:#e8c877; text-shadow:2px 2px 0 #000; line-height:1; }
+  header .motto { font-style:italic; color:#cdbf9a; font-size:.95rem; margin-top:.5rem; }
+  nav.toc { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin:1.4rem 0 .5rem; }
+  nav.toc a { font-size:.8rem; text-transform:uppercase; letter-spacing:1px; color:#241b13; background:#d8c8a4; padding:.35rem .8rem; text-decoration:none; border:1.5px solid #5c3f24; font-weight:700; }
+  nav.toc a:hover { background:#e8c877; }
+  a.home { display:inline-block; margin:1rem 0; color:#b89455; text-decoration:none; font-size:.85rem; letter-spacing:1px; }
+  a.home:hover { color:#e8c877; }
+
+  section { margin:2.4rem 0; }
+  h2 { font-family:'Rye','Playfair Display',serif; color:#e8c877; font-size:1.7rem; border-bottom:2px solid #5c3f24; padding-bottom:.3rem; margin-bottom:.8rem; }
+  h3 { font-family:'Playfair Display',serif; color:#e0c98a; font-size:1.15rem; margin:1.2rem 0 .3rem; }
+  p, li { line-height:1.6; font-size:.95rem; }
+  .lead { font-style:italic; color:#cdbf9a; }
+  table { width:100%; border-collapse:collapse; margin:.7rem 0; font-size:.9rem; }
+  th, td { padding:5px 8px; border-bottom:1px solid #5c4a2a; text-align:left; vertical-align:top; }
+  th { border-bottom:2px solid #b89455; text-transform:uppercase; font-size:.74rem; letter-spacing:1px; color:#b89455; }
+  .box { border:2px solid #5c3f24; background:rgba(20,14,9,.5); padding:1rem 1.2rem; margin:1rem 0; }
+  .box.warn { border-color:#e07a5a; }
+  .k { color:#e8c877; font-weight:700; }
+  .boon { color:#8fcf7a; font-weight:700; }
+  .bane { color:#e07a5a; font-weight:700; }
+  footer { text-align:center; margin-top:3rem; padding-top:1.2rem; border-top:1px solid #5c4a2a; font-style:italic; font-size:.82rem; color:#9a8a62; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="super">Laramie City · Wyoming Territory · 1868</div>
+    <h1>The Rules of the Game</h1>
+    <div class="motto">House rules for a brutal frontier. Standard D&amp;D 5e applies — these are what's different in Laramie.</div>
+    <nav class="toc">
+      <a href="#money">Money &amp; Coin</a>
+      <a href="#drink">Drink &amp; the Cups</a>
+      <a href="#wounds">Wounds</a>
+      <a href="#guns">Guns &amp; Range</a>
+      <a href="#cover">Cover</a>
+      <a href="#knacks">Frontier Knacks</a>
+      <a href="#grit">Grit &amp; Hard Living</a>
+    </nav>
+    <div style="text-align:center;"><a class="home" href="index.html">← back to the home page</a></div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ===================== MONEY ===================== -->
+    <section id="money">
+      <h2>Money &amp; Coin</h2>
+      <p class="lead">A gold piece is a dollar. Nothing on your sheet changes.</p>
+      <p>The D&amp;D coin pyramid maps onto 1868 U.S. currency exactly:</p>
+      <table>
+        <tr><th>Coin</th><th>1868 equal</th><th>Value</th></tr>
+        <tr><td>Platinum (pp)</td><td>Gold Eagle</td><td>$10</td></tr>
+        <tr><td class="k">Gold (gp)</td><td class="k">Gold/Silver Dollar</td><td class="k">$1.00</td></tr>
+        <tr><td>Electrum (ep)</td><td>Half dollar</td><td>$0.50</td></tr>
+        <tr><td>Silver (sp)</td><td>Dime</td><td>$0.10</td></tr>
+        <tr><td>Copper (cp)</td><td>Cent</td><td>$0.01</td></tr>
+      </table>
+      <p>Slang: "two bits" = 25¢, "an eagle" = $10, "a double eagle" = $20. A laborer earns about <span class="k">$2 a day</span> — which is where <i>Two-Dollar Jack</i> got his name.</p>
+      <h3>Bullion &amp; the Assay (gold by weight)</h3>
+      <p>Raw gold dust and nuggets aren't coin — they're weighed at the bank, and the scale's honesty is a live question.</p>
+      <table>
+        <tr><th>Metal</th><th>Per troy ounce</th><th>In gp</th></tr>
+        <tr><td>Gold</td><td data-rate="exchange.gold-oz" data-fmt="dollar">$20.67</td><td>20⅔ gp</td></tr>
+        <tr><td>Silver</td><td data-rate="exchange.silver-oz" data-fmt="dollar">$1.29</td><td>1.29 gp (16:1 to gold)</td></tr>
+      </table>
+      <p><span class="k">Assay &amp; exchange fee:</span> ~<span data-rate="exchange.assay-fee-pct" data-fmt="pct">5%</span> to turn dust into coin. <span class="k">Greenback paper</span> trades at only ~<span data-rate="exchange.greenback-per-dollar" data-fmt="cents">72¢</span> on the gold dollar — the frontier distrusts paper. A crooked scale can shave weight: Wisdom (Insight) or Intelligence (Investigation) DC 13 to notice.</p>
+    </section>
+
+    <!-- ===================== DRINK ===================== -->
+    <section id="drink">
+      <h2>Drink &amp; the Cups Track</h2>
+      <p class="lead">There is no free cup in Laramie. Every drink carries a boon <i>and</i> a bane, and both apply the moment it goes down.</p>
+
+      <h3>The Cups Track</h3>
+      <p>Only <b>beer and spirits</b> advance the track — coffee, smoke, and sarsaparilla do not make a man drunk. Each alcoholic drink is one step (rotgut counts as two). The boons stand; the banes of drunkenness pile up.</p>
+      <table>
+        <tr><th>Drink</th><th>State</th><th>Effect</th></tr>
+        <tr><td><b>1</b></td><td class="k">Warmed</td><td>Boons apply cleanly. Only the drink's own bane.</td></tr>
+        <tr><td><b>2</b></td><td class="k">Loosened</td><td>−1 to attack rolls and ability checks; <span class="boon">advantage on saves vs. being Frightened</span> (the courage rising).</td></tr>
+        <tr><td><b>3</b></td><td class="k">Tipsy</td><td>Disadvantage on Dexterity checks and Dexterity saving throws.</td></tr>
+        <tr><td><b>4</b></td><td class="k">Drunk</td><td>Disadvantage on attack rolls; −2 AC; <i>but</i> immune to the Frightened condition.</td></tr>
+        <tr><td><b>5+</b></td><td class="k">Under</td><td>DC 15 Con save per further drink or gain a level of exhaustion. A second failure: out cold.</td></tr>
+      </table>
+      <p><i>Recovery:</i> one step down per hour without drinking; a full night's rest clears it (and one level of exhaustion).</p>
+
+      <h3>Does a second drink stack?</h3>
+      <ul>
+        <li><span class="k">Same effect never stacks</span> (standard 5e): temp HP takes the <i>higher</i> roll, never added; advantage is just advantage; disadvantage is just disadvantage. Two beers = the better 1d4 and a refreshed hour, not 2d4.</li>
+        <li><span class="k">Different effects all apply at once.</span> A whiskey <i>and</i> a coffee = both boons and both banes together.</li>
+        <li><span class="k">The track is the real cost.</span> Drunkenness accumulates; the boons do not.</li>
+      </ul>
+
+      <h3>What's on the Bar</h3>
+      <table>
+        <tr><th>Drink</th><th class="boon">Boon (always)</th><th class="bane">Bane (always)</th></tr>
+        <tr><td><b>Whiskey</b> <span data-price="drinks.whiskey">50¢</span></td><td>Deaden pain (ignore your first Wound's attack penalty), 1d4 temp HP, adv. vs Frightened — 1 hr</td><td>Disadv. Dex &amp; Int checks 1 hr; +1 cup</td></tr>
+        <tr><td><b>Rotgut</b> <span data-price="drinks.rotgut">15¢</span></td><td>Deaden pain, 1d6 temp HP</td><td>DC 12 Con save or Poisoned 1 hr; +2 cups</td></tr>
+        <tr><td><b>Beer</b> <span data-price="drinks.beer">25¢</span></td><td>1d4 temp HP, adv. vs Frightened 1 hr</td><td>−1 passive Perception &amp; Wis (Perception); +1 cup</td></tr>
+        <tr><td><b>Coffee</b> <span data-price="drinks.coffee">10¢</span></td><td>+2 Initiative, adv. vs sleep/fatigue, ignore 1 exhaustion level — 1 hr</td><td>The Jitters: disadv. steady-hand Dex, no Steady the Bead, no short-rest nap. <i>Not a drink — no cup.</i></td></tr>
+        <tr><td><b>Cigar</b> <span data-price="drinks.cigar">10¢</span></td><td>Adv. next save vs Frightened (10 min)</td><td>Disadv. Stealth &amp; breath-holding (10 min). <i>No cup.</i></td></tr>
+        <tr><td><b>Sarsaparilla</b> <span data-price="drinks.sarsaparilla">10¢</span></td><td>Clear-headed: no banes, no cup; adv. vs charm/deceit 1 hr</td><td>The Teetotaler: disadv. Cha checks with hard-drinking company</td></tr>
+      </table>
+    </section>
+
+    <!-- ===================== WOUNDS ===================== -->
+    <section id="wounds">
+      <h2>The Wound System</h2>
+      <p class="lead">Hit points are endurance and luck. Wounds are the damage a body cannot ignore. This is why getting shot is serious.</p>
+      <p><span class="k">A Wound is inflicted when:</span></p>
+      <ul>
+        <li>A <b>firearm</b> hit deals 10+ damage → Con save, DC 10 + half the damage, or take a Wound.</li>
+        <li>A <b>Brutal melee</b> hit (tomahawk, war lance, felling axe, the auto-pick) deals 10+ → same save. A hatchet wounds like a bullet.</li>
+        <li>Any <b>critical hit</b> with any weapon → a Wound, no save.</li>
+      </ul>
+      <table>
+        <tr><th>Wounds</th><th>Effect (they stack)</th></tr>
+        <tr><td>1</td><td>Disadvantage on all attack rolls</td></tr>
+        <tr><td>2</td><td>Speed halved; disadvantage on Dex saves</td></tr>
+        <tr><td>3</td><td>Incapacitated — no actions/bonus/reactions; half move; whisper only</td></tr>
+        <tr><td>4</td><td>Dying — drop to 0 HP, begin death saves</td></tr>
+      </table>
+      <p><i>Recovery:</i> short rest + DC 12 Medicine (healer's kit) removes 1 Wound; a long rest removes all.</p>
+    </section>
+
+    <!-- ===================== GUNS ===================== -->
+    <section id="guns">
+      <h2>Guns, Range &amp; Rate of Fire</h2>
+      <table>
+        <tr><th>Term</th><th>At the table</th></tr>
+        <tr><td><b>Misfire 1</b></td><td>Natural 1 to hit = the gun jams. A full Action clears it. Watch for an enemy's 1 — that's your window.</td></tr>
+        <tr><td><b>Repeating</b></td><td>Fires every round, no reload between shots. Revolvers (6) and the Winchester (15) — you won't empty either in a fight.</td></tr>
+        <tr><td><b>Single-Shot</b></td><td>Musket, Sharps, derringer, each shotgun barrel: your next Action is reloading. You fire every <i>other</i> round.</td></tr>
+        <tr><td><b>Shotgun Cone</b></td><td>Not aimed — a 15-ft cone, Dex save (no armor bonus). Within 5 ft, disadvantage on the save. Useless past 15 ft. Double-barrel fires both for double dice.</td></tr>
+      </table>
+      <h3>Range Bands = Accuracy</h3>
+      <p>Within a weapon's <b>first range number</b> = normal. Between the two = <b>disadvantage</b>. Past the second = <b>can't hit</b>. A rifle's bands are huge, so a rifleman fires clean where a pistolero is at disadvantage or out of range — <i>that</i> is rifle accuracy.</p>
+      <ul>
+        <li><span class="k">Handy</span> — sidearms ignore the disadvantage for firing within 5 ft of an enemy (hip-shooting); long guns don't. Pistols own the clinch.</li>
+        <li><span class="k">Braced</span> — a rifle/bow with the <b>Steady the Bead</b> aim knack ignores long-range disadvantage. Rifles own the distance.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== COVER ===================== -->
+    <section id="cover">
+      <h2>Cover</h2>
+      <p>When guns are drawn, the first question is rarely "what do I shoot" — it's "what am I behind." Cover is the difference between a fight you walk away from and one you don't.</p>
+      <table>
+        <tr><th>Cover</th><th>Examples</th><th>Benefit</th></tr>
+        <tr><td><b>Half</b></td><td>hitching rail, trough, a body between you</td><td>+2 AC, +2 Dex saves</td></tr>
+        <tr><td><b>Three-Quarters</b></td><td>doorframe, barrel, porch post, a rise</td><td>+5 AC, +5 Dex saves</td></tr>
+        <tr><td><b>Total</b></td><td>a wall, a boulder, around a corner</td><td>can't be hit — can't shoot out</td></tr>
+      </table>
+      <p>Firearms shed <b>3 AC</b> off heavy armor and <b>1</b> off medium; shields give only +1 against guns. Dynamite and both barrels of a shotgun can <i>remove</i> cover. On the battle-mats, the crates, troughs, and overturned tables earn their keep.</p>
+    </section>
+
+    <!-- ===================== KNACKS ===================== -->
+    <section id="knacks">
+      <h2>Frontier Knacks — Learned Abilities</h2>
+      <p>Knacks are small techniques anyone can be <b>taught</b>: 3 days of downtime with a teacher and a DC 13 check in the governing ability.</p>
+      <h3>Steady the Bead (Aim Down Sights)</h3>
+      <p><b>Bonus Action.</b> With a ranged weapon, gain <span class="boon">advantage on your next attack</span> this turn against a target in normal range. <span class="bane">Cost:</span> you can't have moved &gt;5 ft and can't move after; if you take damage before the shot, you lose it; ranged weapons only. (A Wound's disadvantage cancels the advantage to a straight roll — aim undoes the shake but can't overcome it.)</p>
+      <p class="lead">Other knacks to learn: Fan the Hammer, Fast Draw, Roll With It, Read the Room — each a real benefit with a real cost and a teacher who has a reason to share it.</p>
+    </section>
+
+    <!-- ===================== GRIT ===================== -->
+    <section id="grit">
+      <h2>Grit &amp; Luck</h2>
+      <p class="lead">You already have this. Every character carries a pool of <b>Grit</b> — raw frontier luck and stubbornness. You don't earn it; it's yours from the start.</p>
+
+      <h3>How much you have</h3>
+      <p>Your Grit pool equals your <b>proficiency bonus</b>:</p>
+      <table>
+        <tr><th>Level (≈ Day)</th><th>Grit you carry</th></tr>
+        <tr><td>1–4</td><td><b>2 Grit</b></td></tr>
+        <tr><td>5–8</td><td><b>3 Grit</b></td></tr>
+        <tr><td>9+</td><td><b>4 Grit</b></td></tr>
+      </table>
+      <p><b>Right now, on Day 1, you have 2 Grit in your pocket.</b> Mark it on your sheet; spend it down as a tally.</p>
+
+      <h3>What you spend it on</h3>
+      <p>Spending 1 Grit takes <b>no action</b> — you can even do it on someone else's turn. Choose one:</p>
+      <ul>
+        <li><span class="k">Steady the nerve</span> — add <b>1d6</b> to any d20 roll (attack, save, or check) <i>after</i> you see the number, before the DM says hit or miss.</li>
+        <li><span class="k">Quick hands</span> — reload a firearm as a <b>bonus action</b> instead of an action.</li>
+        <li><span class="k">Ride your luck</span> — turn a <b>critical hit against you into an ordinary hit</b> (and cancel the Wound it would have caused). The shot that should have killed you only grazed.</li>
+      </ul>
+
+      <h3>Getting it back</h3>
+      <p>Regain <b>all</b> spent Grit on a <b>long rest</b> (a proper night's sleep). <i>Optional table rule:</i> the DM may hand back a single Grit for a moment of real daring or great play — luck favors the bold.</p>
+
+      <h3>Hard Living — the frontier's tax (this one isn't yours to spend)</h3>
+      <p>The opposite of Grit. Not a resource — a <b>hazard.</b> After a genuinely hard night — rotgut and no real sleep, a night exposed without shelter, a brutal beating — make a <b>DC 12 Constitution save</b> or gain <b>one level of exhaustion.</b> Food, warmth, and rest pay it back down. The frontier collects what you owe it.</p>
+    </section>
+
+    <footer>
+      Standard D&amp;D 5e governs everything not written here. &nbsp;The Wide Grave is free of charge.<br>
+      <a class="home" href="index.html">← back to the home page</a>
+    </footer>
+
+  </div>
+<script src="prices.js" defer></script>
+</body>
+</html>

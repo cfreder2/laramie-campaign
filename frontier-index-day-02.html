@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--
+  THE FRONTIER INDEX — DAY 2 EDITION
+  Published the morning after Day 1 (The Town Meeting). Greets the players at
+  the start of the Day 2 session. Voice: pious, pro-Ring, pro-progress —
+  wrongness leaking through. Encodes Day 1 meter movement as in-world signals:
+    Depot +1 / Industry signal  → lumber on schedule, the Roundhouse rising, the grand opening
+    Opportunity +1              → civic cheer, families, fair dealings, the schoolhouse
+    Natural Order +1            → "savage trouble": Arapaho on the river, the hills restless
+  Buried negatives (Clara's murder, the missing body, the deed-grab) reported piously.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Frontier Index — Day 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&display=swap');
+  body { margin:0; padding:2rem; background:#2b2620; font-family:'Old Standard TT',serif; }
+  .paper { max-width:1080px; margin:0 auto; background:#e8dcc0;
+    background-image:radial-gradient(ellipse at top left,rgba(120,90,40,.10),transparent 60%),radial-gradient(ellipse at bottom right,rgba(120,90,40,.14),transparent 55%);
+    padding:2.5rem 3rem 3rem; box-shadow:0 0 40px rgba(0,0,0,.6); color:#2a2018; }
+  .topline{display:flex;justify-content:space-between;font-size:.78rem;text-transform:uppercase;letter-spacing:2px;font-weight:700;}
+  .masthead{text-align:center;border-bottom:4px double #2a2018;padding-bottom:.6rem;margin-bottom:.4rem;}
+  .masthead h1{font-family:'UnifrakturCook',serif;font-size:5rem;margin:.2rem 0 0;line-height:.95;}
+  .masthead .motto{font-style:italic;font-size:1rem;letter-spacing:1px;}
+  .dateline{display:flex;justify-content:space-between;border-top:1px solid #2a2018;border-bottom:3px double #2a2018;padding:.3rem 0;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.2rem;}
+  .columns{column-count:3;column-gap:1.8rem;column-rule:1px solid #9a8a68;text-align:justify;font-size:.92rem;line-height:1.5;}
+  h2.head{font-family:'Playfair Display',serif;font-weight:900;text-align:center;font-size:1.5rem;line-height:1.1;margin:0 0 .1rem;text-transform:uppercase;break-after:avoid;}
+  h2.lead{font-size:2rem;}
+  h3.subhead{text-align:center;font-style:italic;font-weight:400;font-size:.95rem;margin:0 0 .5rem;border-bottom:1px solid #9a8a68;padding-bottom:.4rem;}
+  .kicker{text-align:center;text-transform:uppercase;letter-spacing:3px;font-size:.7rem;font-weight:700;margin-top:1rem;}
+  .article{margin-bottom:1.1rem;break-inside:avoid-column;}
+  .article p{margin:0 0 .6rem;}
+  .article p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:3rem;float:left;line-height:.7;padding:.1rem .35rem 0 0;font-weight:900;}
+  .lead-wrap{column-span:all;border-bottom:2px solid #2a2018;margin-bottom:1rem;padding-bottom:.8rem;}
+  .byline{font-style:italic;text-align:center;font-size:.82rem;margin-bottom:.5rem;}
+  .rule-orn{text-align:center;font-size:1.1rem;margin:.6rem 0;letter-spacing:4px;}
+  .box{border:3px double #2a2018;padding:.8rem 1rem;margin:.4rem 0 1.1rem;break-inside:avoid;background:rgba(160,130,70,.08);}
+  .box h4{font-family:'Playfair Display',serif;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin:.1rem 0 .5rem;text-align:center;font-size:1.05rem;}
+  .notice{border-top:1px solid #2a2018;border-bottom:1px solid #2a2018;padding:.5rem 0;margin:.6rem 0;font-size:.85rem;break-inside:avoid;}
+  .notice b{text-transform:uppercase;letter-spacing:1px;}
+  .obit{font-size:.85rem;} .obit b{font-variant:small-caps;letter-spacing:.5px;}
+  .rumor{font-size:.85rem;font-style:italic;margin:.3rem 0;}
+  .reward{text-align:center;}
+  .reward .amt{font-family:'Playfair Display',serif;font-weight:900;font-size:1.7rem;letter-spacing:1px;}
+  .footnote{text-align:center;font-style:italic;font-size:.82rem;margin-top:1.5rem;border-top:1px solid #9a8a68;padding-top:.8rem;column-span:all;}
+
+  /* ---------- RESPONSIVE / MOBILE ---------- */
+  /* Fluid masthead so the title never overflows narrow screens */
+  .masthead h1 { font-size: clamp(2.4rem, 12vw, 5.2rem); }
+
+  @media (max-width: 860px) {
+    body { padding: 1rem 0.5rem; }
+    .paper { padding: 1.4rem 1.2rem 2rem; }
+    .columns { column-count: 2; column-gap: 1.2rem; }
+    .topline, .dateline { flex-wrap: wrap; gap: 0.2rem 1rem; justify-content: center; text-align: center; }
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 0.5rem 0.3rem; }
+    .paper { padding: 1rem 0.9rem 1.6rem; }
+    /* single column reads properly on a phone */
+    .columns { column-count: 1; }
+    .lead-wrap { margin-bottom: 0.8rem; }
+    h2.head { font-size: 1.3rem; }
+    h2.lead { font-size: 1.6rem; }
+    .masthead .motto { font-size: 0.85rem; }
+    .topline { font-size: 0.65rem; letter-spacing: 1px; }
+    .dateline { font-size: 0.72rem; }
+    .article p:first-of-type::first-letter { font-size: 2.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="paper">
+
+  <div class="topline">
+    <span>Published Daily</span>
+    <span>Wyoming Territory</span>
+    <span>Price Two Cents</span>
+  </div>
+
+  <div class="masthead">
+    <h1>The Frontier Index</h1>
+    <div class="motto">— Truth, Progress, and the Iron Promise —</div>
+  </div>
+
+  <div class="dateline">
+    <span>Vol. I &nbsp;·&nbsp; No. VIII</span>
+    <span>Laramie City, W.T. &nbsp;—&nbsp; The Second Day · Spring, A.D. 1868</span>
+    <span>Eight Days to the Train</span>
+  </div>
+
+  <!-- ===== LEAD: the supply train + the Roundhouse (Industry / Depot up) ===== -->
+  <div class="lead-wrap">
+    <h2 class="head lead">CHEYENNE LUMBER TO ARRIVE WITH THE DAWN; THE BOOTH ROUND-HOUSE RISES</h2>
+    <h3 class="subhead">A Supply Train at First Light Brings Green Timber and Provision for a Grand Opening — Laramie City Builds, While Cheyenne Watches</h3>
+    <div class="article">
+      <p>Word is confirmed upon the wire that the morning's supply train shall reach Laramie City at first light tomorrow, bearing down from Cheyenne a full consignment of green lumber, together with bunting, board, and provision for the GRAND OPENING of the new <b>Booth Round-House</b> — the first stone of the Iron Promise made visible. Where but lately stood mud and survey-stake, there shall stand a building. Let the Commissioner, when he comes, find a city that raises roofs and not one that digs graves.</p>
+      <p>"The line runs on time, the timber comes on schedule, and a town that builds is a town that earns," said an officer of the Division. The Round-House is to be christened in memory of the late <b>Mrs. Clara Boothe</b>, upon whose ground it is to stand — a tender gesture and honor to our great Lord Paylor. May His peace and order settle upon the town in Clara's image.</p>
+    </div>
+  </div>
+
+  <div class="columns">
+
+    <!-- ===== SECONDARY 1: Con Moyer's inquiry, the robbery, the missing body ===== -->
+    <div class="article">
+      <h2 class="head">Marshal Orders Inquiry Into Widow Boothe's Death</h2>
+      <h3 class="subhead">Her Body Vanished from the House Before Deputy Big Steve Could Inspect It</h3>
+      <p>Marshal <b>Con Moyer</b> has this day directed a formal investigation into the death of Mrs. Clara Boothe, citing the suspicious timing of her passing and the testimony of her Paylor sisters, who knew her hale and were much surprised to learn she had died so sudden.</p>
+      <p>It is further reported that the Boothe dwelling was entered, ransacked, and robbed of any item of value, and her whole crop of vegetables carried off — the same that were promised to <b>Father Dominic's</b> soup line for the morrow's eve. "That a man would steal the very nourishment grown for the mouths of our most beset," the Father is said to have remarked, "tells you what manner of sin walks among us."</p>
+      <p>Gravest of all, the body of Mrs. Boothe has gone missing prior to any inspection by the Marshal's office into the cause of her death. The Marshal's office offers a <b>reward of Fifteen Dollars ($15)</b> for information leading to the body's recovery, and assures the public that justice and order shall be done.</p>
+    </div>
+
+    <div class="rule-orn">❖ ❖ ❖</div>
+
+    <!-- ===== SECONDARY 2: the Court of Title (the Ring's deed-grab) ===== -->
+    <div class="article">
+      <h2 class="head">A Court of Title to Sit Before the Commissioner Comes</h2>
+      <p>That all may be found in proper order upon the Commissioner's arrival, a review of every deed and claim within Laramie City and its diggings is hereby called. In <b>three days' time</b>, all householders and claimants are bid present their title in court, the same to be heard and settled by <b>Judge Ace Moyer</b>, who shall adjudge any dispute of proper ownership.</p>
+      <p>It is, the bench assures us, a measure of pure prudence — for what investor will plant his capital where titles are clouded? Holders of land would do well to have their papers in hand. The court shall convene in its accustomed chamber in Keystone Hall.</p>
+    </div>
+
+    <!-- ===== CIVIC NOTICE: the party-planning committee ===== -->
+    <div class="box">
+      <h4>Hands Wanted — To Plan the Celebration</h4>
+      <p style="font-size:.85rem;text-align:center;">An OPEN CALL goes out for all public-spirited citizens to help <b>plan the grand-opening party for the Booth Round-House</b> — the decorations, the music, the food and drink, and every festivity of that happy day. Volunteers are bid to gather at the <b>Bucket of Blood</b> this very night to form the planning committee. Come lend a hand, that Laramie City may show the stranger a face of welcome and good cheer.</p>
+    </div>
+
+    <!-- ===== FATHER DOMINIC'S PRAYER ===== -->
+    <div class="article">
+      <h2 class="head">A Prayer for the Town</h2>
+      <h3 class="subhead">offered at the meeting by Father Dominic of the Mission of Saint Paylor</h3>
+      <p>O Blessed Paylor, our Lord, we bless this town and its good fortune, and ask Your grace to guide us all. May every member of our community be drawn to Your house and join us in worship. Help us to be faithful in our tithes and offerings, and may we live in good order and integrity, shielded from deceit. Guard us from the dark arts and every form of witchcraft that would lead us astray, and fill us with love for You. Through Our Lord Paylor.</p>
+    </div>
+
+    <!-- ===== OFFICIAL NOTICE: the deed-grab fine print ===== -->
+    <div class="notice">
+      <b>Notice of Title Review.</b> All claimants shall present recorded and properly attested title before the bench within three days. Claims unrepresented, or supported by paper the court deems irregular, may be held in abeyance or adjudged abandoned, and the ground returned to the public register. Per order of the Court, A. Moyer presiding.
+    </div>
+
+    <!-- ===== REWARD POSTER: the bears ===== -->
+    <div class="box reward">
+      <h4>Reward — The Medicine Bow Bears</h4>
+      <p style="font-size:.85rem;">The grizzled bears are woke from their winter and grown bold. Hunting parties are forming, and the Territory will pay</p>
+      <div class="amt">$10 — One Eagle —</div>
+      <p style="font-size:.85rem;">for every bear pelt brought in. Citizens are warned, on pain of their lives, to keep NO food nor offal within their camps.</p>
+    </div>
+
+    <!-- ===== OBITUARY ===== -->
+    <div class="kicker">Obituary</div>
+    <div class="article obit">
+      <p><b>Tom Avery &amp; Niels Pferd</b>, miners, of no fixed years, were taken in the night upon the north slope of the Medicine Bow, hard by the railroad cut, having left their supper standing at the fire. A grizzled bear came upon them in the dark and neither lived to see the morning. They are mourned by their fellows on the line and interred without the city. Let their hard end be a lesson writ for every man who would sleep beside his bacon.</p>
+    </div>
+
+    <!-- ===== WHAT THE TOWN IS SAYING ===== -->
+    <div class="box">
+      <h4>The Madam's Bucket o' Rumors</h4>
+      <div class="rumor">— "Isn't it strange someone stole that horse and cart from poor old Nickles? Whoever took the cart most likely took the body, too."</div>
+      <div class="rumor">— "They say it isn't bears we need fear in the woods. The Arapaho are agitated, and moving in great numbers."</div>
+      <div class="rumor">— "Those two men the bears were said to take — maybe it wasn't bears that killed them at all."</div>
+    </div>
+
+  </div>
+
+  <div class="footnote">
+    The Frontier Index is published each morning upon Front Street. The opinions herein bind neither the Union Pacific Railroad nor the Territory of Wyoming.
+  </div>
+
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bucket of Blood — Bill of Fare</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&family=Rye&display=swap');
+  * { box-sizing: border-box; }
+  body { margin:0; padding:2rem 1rem 4rem; background:#241b13; font-family:'Old Standard TT',serif; color:#ecdfbf; }
+  .board {
+    max-width:1080px; margin:0 auto;
+    background:#2c2118;
+    background-image:
+      radial-gradient(ellipse at top, rgba(180,140,70,.10), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    border:14px solid #5c3f24; border-radius:4px;
+    padding:2rem 2.5rem 3rem; box-shadow:0 0 50px rgba(0,0,0,.7), inset 0 0 60px rgba(0,0,0,.5);
+  }
+  .masthead { text-align:center; border-bottom:3px double #b89455; padding-bottom:.6rem; }
+  .masthead .super { text-transform:uppercase; letter-spacing:5px; font-size:.72rem; color:#b89455; }
+  .masthead h1 { font-family:'Rye','Playfair Display',serif; font-size:3.4rem; margin:.3rem 0 .1rem; color:#e8c877; text-shadow:2px 2px 0 #000; line-height:1; }
+  .masthead .sub { font-family:'UnifrakturCook',serif; font-size:1.6rem; color:#d8c8a0; }
+  .masthead .motto { font-style:italic; font-size:.92rem; color:#b89455; margin-top:.3rem; }
+
+  .intro { text-align:center; font-style:italic; max-width:720px; margin:1rem auto .5rem; font-size:.92rem; line-height:1.5; color:#cdbf9a; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1rem; margin-top:1.4rem; }
+  .drink {
+    border:2px solid #b89455; background:rgba(20,14,9,.5); padding:.9rem 1rem 1rem; position:relative;
+    box-shadow:2px 2px 0 rgba(0,0,0,.4);
+  }
+  .drink .tag { position:absolute; top:-1px; right:-1px; font-size:.6rem; text-transform:uppercase; letter-spacing:1px; background:#b89455; color:#241b13; padding:2px 7px; font-weight:700; }
+  .drink h3 { font-family:'Rye','Playfair Display',serif; font-size:1.25rem; margin:.1rem 0 .1rem; color:#e8c877; padding-right:3.5rem; line-height:1.1; }
+  .drink .price { font-size:1.1rem; font-weight:700; margin-bottom:.5rem; color:#d8c8a0; }
+  .drink .price .av { font-size:.72rem; font-weight:400; font-style:italic; color:#9a8a62; }
+  .boon, .bane { font-size:.83rem; line-height:1.45; margin:.35rem 0; }
+  .boon b { color:#8fcf7a; font-variant:small-caps; letter-spacing:.5px; }
+  .bane b { color:#e07a5a; font-variant:small-caps; letter-spacing:.5px; }
+  .tradeoff { font-size:.8rem; font-style:italic; margin-top:.55rem; padding-top:.45rem; border-top:1px solid #5c4a2a; color:#cdbf9a; line-height:1.4; }
+  .tradeoff::before { content:"⚖ "; font-style:normal; }
+
+  .rulebox { border:3px double #b89455; padding:1rem 1.4rem; margin:1.8rem 0 .5rem; background:rgba(20,14,9,.4); font-size:.9rem; line-height:1.55; }
+  .rulebox h4 { font-family:'Rye','Playfair Display',serif; color:#e8c877; text-align:center; margin:0 0 .5rem; font-size:1.2rem; }
+  .rulebox table { width:100%; border-collapse:collapse; font-size:.85rem; margin-top:.5rem; }
+  .rulebox td, .rulebox th { padding:3px 6px; border-bottom:1px solid #5c4a2a; text-align:left; }
+  .rulebox th { border-bottom:1.5px solid #b89455; text-transform:uppercase; font-size:.74rem; letter-spacing:1px; color:#b89455; }
+  .rulebox ul { margin:.3rem 0 .6rem; font-size:.85rem; line-height:1.5; }
+  .footnote { text-align:center; font-style:italic; font-size:.82rem; margin-top:1.6rem; border-top:1px solid #5c4a2a; padding-top:.8rem; color:#9a8a62; }
+  .footnote a { color:#e8c877; }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="masthead">
+    <div class="super">Front Street · Laramie City, W.T.</div>
+    <h1>The Bucket of Blood</h1>
+    <div class="sub">Bill of Fare</div>
+    <div class="motto">— The Tap, The Bottle, and The Comfort of Vice —<br>(prices the same at any honest house on the street)</div>
+  </div>
+
+  <p class="intro">There is no free cup in Laramie: every drink carries a boon and a bane, and both apply the moment it goes down. Drink to warm the blood and steady the nerve — drink past that, and the bottle starts collecting what it lent.</p>
+
+  <div class="grid">
+
+    <div class="drink">
+      <span class="tag">Spirits</span>
+      <h3>Whiskey — Good Rye</h3>
+      <div class="price"><span data-price="drinks.whiskey">50&cent;</span> <span class="av">· the glass</span></div>
+      <div class="boon"><b>Boon (always) — Deaden Pain</b> — for 1 hour, ignore the attack-roll penalty of your <i>first Wound</i>; 1d4 temporary hit points; advantage on saves vs. being Frightened.</div>
+      <div class="bane"><b>Bane (always)</b> — disadvantage on Dexterity and Intelligence checks for 1 hour. <b>+1 on the Cups track.</b></div>
+      <div class="tradeoff">A shot before the duel quiets the wound and the fear with it — at the price of a wandering hand. Choose your moment.</div>
+    </div>
+
+    <div class="drink">
+      <span class="tag">Spirits</span>
+      <h3>Rotgut Whiskey</h3>
+      <div class="price"><span data-price="drinks.rotgut">15&cent;</span> <span class="av">· the glass</span></div>
+      <div class="boon"><b>Boon (always)</b> — Deaden Pain as the good rye, and <b>1d6</b> temporary hit points — more courage for less coin.</div>
+      <div class="bane"><b>Bane (always)</b> — DC 12 Constitution save or <b>Poisoned</b> for 1 hour. <b>+2 on the Cups track.</b></div>
+      <div class="tradeoff">Tarantula juice. Cheaper, braver, and twice as likely to put you under the table — or under the ground.</div>
+    </div>
+
+    <div class="drink">
+      <span class="tag">Tap</span>
+      <h3>Beer / Lager</h3>
+      <div class="price"><span data-price="drinks.beer">25&cent;</span> <span class="av">· the mug</span></div>
+      <div class="boon"><b>Boon (always) — Liquid Courage</b> — 1d4 temporary hit points; advantage on saves vs. being Frightened for 1 hour.</div>
+      <div class="bane"><b>Bane (always) — Dulled</b> — −1 to passive Perception and to Wisdom (Perception) checks for 1 hour. <b>+1 on the Cups track.</b></div>
+      <div class="tradeoff">Warms the blood and steadies the nerve — and is why the man at the next table heard nothing before the knife.</div>
+    </div>
+
+    <div class="drink">
+      <span class="tag">Pot</span>
+      <h3>Coffee — Arbuckle's</h3>
+      <div class="price"><span data-price="drinks.coffee">10&cent;</span> <span class="av">· the cup</span></div>
+      <div class="boon"><b>Boon (always)</b> — for 1 hour: +2 Initiative, advantage on saves vs. sleep and fatigue, and ignore the effects of one level of exhaustion.</div>
+      <div class="bane"><b>Bane (always) — The Jitters</b> — for that hour: disadvantage on steady-hand Dexterity checks (Sleight of Hand, Thieves' Tools, fine work), you cannot use <b>Steady the Bead</b> (aim), and you cannot benefit from a nap on a short rest.</div>
+      <div class="tradeoff">Quick, sharp, wide awake — and a hand too jittered to aim a long shot or pick a lock. (Not drink; does not advance the Cups track.)</div>
+    </div>
+
+    <div class="drink">
+      <span class="tag">Smoke</span>
+      <h3>A Good Cigar</h3>
+      <div class="price"><span data-price="drinks.cigar">10&cent;</span> <span class="av">· the smoke</span></div>
+      <div class="boon"><b>Boon (always) — Steady Nerves</b> — for 10 minutes, advantage on your next saving throw against being Frightened.</div>
+      <div class="bane"><b>Bane (always) — The Cloud</b> — for 10 minutes, disadvantage on Stealth checks (the smell, the cough) and on Constitution checks to hold your breath or endure hard exertion.</div>
+      <div class="tradeoff">A moment's calm wrapped in tobacco — and a trail of smoke that announces you to every nose in the dark. (Does not advance the Cups track.)</div>
+    </div>
+
+    <div class="drink">
+      <span class="tag">Temperance</span>
+      <h3>Sarsaparilla</h3>
+      <div class="price"><span data-price="drinks.sarsaparilla">10&cent;</span> <span class="av">· the bottle</span></div>
+      <div class="boon"><b>Boon (always) — Clear-Headed</b> — you take on no drink-banes and add nothing to the Cups track; advantage on saves vs. being charmed or deceived for the hour. A sober mind in a room of loose ones.</div>
+      <div class="bane"><b>Bane (always) — The Teetotaler</b> — a man who won't drink is a man not trusted in a hard room: disadvantage on Charisma checks to win over rough company while you're visibly off the bottle.</div>
+      <div class="tradeoff">The clear-eyed choice — and the one that marks you as a preacher, a Pinkerton, or a fool.</div>
+    </div>
+
+  </div>
+
+  <div class="rulebox">
+    <h4>The Cups Track</h4>
+    <p><b>Only spirits and beer advance the track</b> — coffee, smoke, and sarsaparilla do not make a man drunk. Each alcoholic drink is one step (rotgut counts as two). The boons stand; the banes of drunkenness pile atop one another. A canny fighter stops at <i>Warmed</i>. A desperate one drinks past it on purpose.</p>
+    <table>
+      <tr><th>Drink</th><th>State</th><th>Effect</th></tr>
+      <tr><td><b>1</b></td><td><b>Warmed</b></td><td>Boons apply cleanly. Only the drink's own bane.</td></tr>
+      <tr><td><b>2</b></td><td><b>Loosened</b></td><td>−1 to attack rolls and ability checks; advantage on saves vs. being Frightened.</td></tr>
+      <tr><td><b>3</b></td><td><b>Tipsy</b></td><td>Disadvantage on Dexterity checks and Dexterity saves.</td></tr>
+      <tr><td><b>4</b></td><td><b>Drunk</b></td><td>Disadvantage on attack rolls; −2 AC; <i>but</i> immune to the Frightened condition.</td></tr>
+      <tr><td><b>5+</b></td><td><b>Under</b></td><td>DC 15 Con save per further drink or a level of exhaustion. A second failure: out cold.</td></tr>
+    </table>
+    <p style="margin-bottom:0;font-size:.85rem;"><i>Recovery:</i> one step down per hour without drinking; a full night's rest clears it. Full rules on stacking, money, wounds, and combat: see <b>The Rules of the Game</b>.</p>
+  </div>
+
+  <div class="footnote">
+    Whiskey weighed honest, cards dealt the same — ask for neither in the back room.<br>
+    For arms and powder, see <b>Ivinson &amp; Co. General Store</b>. For how it all works, see <b>The Rules of the Game</b>.
+  </div>
+
+</div>
+<script src="prices.js" defer></script>
+</body>
+</html>

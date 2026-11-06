@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17110b">
+  <title>Laramie Battle Board</title>
+  <link rel="stylesheet" href="styles.css?v=21">
+</head>
+<body>
+  <script>
+    (function () {
+      var KEY = "laramie-board-theme";
+      document.body.dataset.theme = localStorage.getItem(KEY) || "western";
+      // Paint before first render so nobody sees a flash of the wrong table.
+      // The picker itself is wired up in app.js, where the rest of the behaviour is.
+      document.addEventListener("DOMContentLoaded", function () {
+        var sel = document.getElementById("theme-select");
+        if (sel) sel.value = document.body.dataset.theme;
+      });
+    })();
+  </script>
+  <!-- What is on the table, who is at it, and the handful of things you do to the
+       whole board. Anything that belongs to one actor lives on that actor's sheet;
+       anything that belongs to the scene lives in the side navigation. -->
+  <header class="topbar">
+    <a class="title-block" href="../" title="Back to the campaign site">
+      <span class="campaign-name" id="campaign-name">Loading campaign…</span>
+      <span class="title-dash" aria-hidden="true">—</span>
+      <span class="encounter-name" id="encounter-name">No encounter loaded</span>
+    </a>
+
+    <!-- One chip per seat, coloured by whether that player has actually arrived.
+         It replaces the old single "connected / not connected" pill, which could
+         only ever answer the question for the table as a whole. A player's own
+         screen has no seats to show and gets its own status chip instead. -->
+    <div class="seat-chips" id="seat-chips" role="group" aria-label="Players at the table"></div>
+
+    <div class="top-actions">
+      <button class="button quiet" id="player-preview-button" type="button" aria-pressed="false" hidden
+              title="See the table exactly as a player does — you stay the host">View as player</button>
+      <button class="button quiet" id="fit-button" type="button">Fit map</button>
+      <!-- Deliberately inert. Its eventual job is to write the arrangement back
+           to the campaign YAML and commit it, which a static page cannot do from
+           the browser — that needs the DND CLI listening locally, and the button
+           goes live only when one answers. Until then it says so and does nothing. -->
+      <button class="button quiet" id="save-board" type="button" disabled
+              title="Run `dnd encounter serve` beside the table to enable saving.">Save</button>
+
+      <div class="who-menu">
+        <button class="who-button" id="who-button" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="who-role" id="who-role">DM</span><strong id="who-name">Dungeon Master</strong><span class="who-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="who-dropdown" id="who-dropdown" role="menu" hidden>
+          <label class="field"><span>Your name at the table</span><input id="who-name-input" type="text" maxlength="32" placeholder="Dungeon Master"></label>
+          <button class="menu-item dm-only" id="menu-load-encounter" type="button" role="menuitem">Load encounter…</button>
+          <button class="menu-item" id="menu-display" type="button" role="menuitem">Display settings…</button>
+          <button class="menu-item" id="menu-seats" type="button" role="menuitem">Players &amp; connection…</button>
+          <button class="menu-item" id="help-button" type="button" role="menuitem">Help</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Only ever shown on the DM's own screen, and only while they are rehearsing
+       the player view. It sits in the flow so nothing can hide it. -->
+  <div class="preview-bar" id="player-preview-bar" role="status" hidden>
+    <span class="preview-eye" aria-hidden="true">👁</span>
+    <strong>Viewing as player</strong>
+    <span class="preview-note">Secrets, held-back facts, and the DM's panels are hidden. You are still hosting.</span>
+    <button class="button" id="exit-player-preview" type="button">Exit</button>
+  </div>
+
+  <main class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <section class="panel lobby-panel" id="lobby-panel">
+        <p class="eyebrow">Peer-to-peer tabletop</p>
+        <h1>Open the table</h1>
+        <p class="lede">One browser hosts the board. Every player connects directly by exchanging a pair of connection codes.</p>
+
+        <div class="mode-switch" role="group" aria-label="Connection mode">
+          <button class="mode-button active" id="choose-host" type="button">Host a board</button>
+          <button class="mode-button" id="choose-player" type="button">Join as player</button>
+        </div>
+
+        <div id="host-lobby">
+          <ol class="steps">
+            <li>Click <strong>Seat the four players</strong> — one code per character.</li>
+            <li>Send each player their character's offer code.</li>
+            <li>Paste each player's answer back into their seat.</li>
+          </ol>
+          <button class="button primary wide" id="seat-players-button" type="button">Seat the players</button>
+          <button class="button wide" id="add-seat-button" type="button">Add an extra seat</button>
+          <div id="seat-list" class="seat-list"></div>
+        </div>
+
+        <div id="player-lobby" hidden>
+          <label class="field">
+            <span>Your first name, as the DM knows you</span>
+            <input id="player-name" type="text" maxlength="32" placeholder="Billy" autocomplete="nickname">
+          </label>
+          <label class="field">
+            <span>Host offer code</span>
+            <textarea id="offer-input" rows="6" spellcheck="false" placeholder="Paste the host's offer here"></textarea>
+          </label>
+          <button class="button primary wide" id="make-answer-button" type="button">Create answer code</button>
+          <div class="code-block" id="answer-block" hidden>
+            <label class="field">
+              <span>Send this answer to the host</span>
+              <textarea id="answer-output" rows="6" readonly spellcheck="false"></textarea>
+            </label>
+            <button class="button wide" id="copy-answer-button" type="button">Copy answer</button>
+          </div>
+        </div>
+
+        <p class="network-note">Designed for players on the same local network. No board data is uploaded or stored by GitHub.</p>
+      </section>
+
+      <!-- The rail is the navigation, collapsed. It stays put when the panel is
+           shut, so switching floors or reaching the library never costs you the
+           whole sidebar the way the old hide-everything button did. Each button
+           opens its own section; the first one shuts the panel again. -->
+      <nav class="nav-rail" id="nav-rail" aria-label="Board sections" hidden>
+        <button class="rail-toggle" id="rail-toggle" type="button" aria-label="Collapse the menu" aria-expanded="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+        <div class="rail-group">
+          <button class="rail-button" data-opens="floor" type="button" title="Floor">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 8l10 6 10-6-10-6Z"/><path d="m2 14 10 6 10-6"/></svg>
+          </button>
+          <button class="rail-button" data-opens="party" type="button" title="The party">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          </button>
+          <button class="rail-button" data-opens="library" type="button" title="Library">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+          <button class="rail-button" data-opens="encounter" type="button" title="Encounter settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4Z"/><path d="M8 2v16M16 6v16"/></svg>
+          </button>
+          <button class="rail-button" data-opens="environment" type="button" title="Environment effects">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2s5 4.5 5 9a5 5 0 0 1-10 0c0-1.8.8-3.5 1.8-5"/><path d="M12 22a3.5 3.5 0 0 0 3.5-3.5c0-2-3.5-5-3.5-5s-3.5 3-3.5 5A3.5 3.5 0 0 0 12 22Z"/></svg>
+          </button>
+          <button class="rail-button" data-opens="affiliations" type="button" title="Affiliations">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+          </button>
+        </div>
+        <div class="rail-group rail-foot">
+          <button class="rail-button" data-opens="table" type="button" title="Players &amp; connection">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3A5 5 0 0 0 13.5 3.5L12 5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3A5 5 0 0 0 10.5 20.5L12 19"/></svg>
+          </button>
+        </div>
+      </nav>
+
+      <section class="panel board-controls" id="board-controls" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow" id="role-eyebrow">Dungeon Master</p>
+            <h2 id="role-heading">Menu</h2>
+          </div>
+        </div>
+
+        <details class="nav-section" data-section="floor" data-scope="all">
+          <summary><span class="nav-title">Floor</span></summary>
+          <div class="nav-body">
+            <div class="layer-switch" id="layer-switch" role="group" aria-label="Map layer"></div>
+            <button class="button wide" id="pin-table" type="button" hidden>Bring the table to this floor</button>
+            <p class="field-hint" id="layer-hint">You see the floor your character is standing on. Take an exit to change it.</p>
+            <div class="exit-block" id="exit-section" hidden>
+              <p class="eyebrow">Ways out</p>
+              <div class="exit-list" id="exit-list" role="group" aria-label="Ways off this floor"></div>
+              <p class="field-hint" id="exit-hint"></p>
+              <button class="button wide" id="add-exit" type="button" hidden>Draw an exit</button>
+              <p class="field-hint" id="add-exit-hint" hidden></p>
+            </div>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="party" data-scope="all">
+          <summary><span class="nav-title">The party</span><span class="scope-badge">Everyone</span></summary>
+          <div class="nav-body">
+            <div id="player-actor-list" class="token-list"><span class="muted">No player characters in this campaign</span></div>
+            <p class="field-hint">The party sees its own hit points. Drag a character onto the board to seat them, or click one already down there to find them.</p>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="library" data-scope="dm">
+          <summary><span class="nav-title">Library</span><span class="scope-badge">DM</span></summary>
+          <div class="nav-body">
+            <div class="library-search">
+              <input id="library-search" type="search" placeholder="Search the library" aria-label="Search the library" autocomplete="off">
+            </div>
+            <div class="asset-library" id="asset-library"><span class="muted">Loading actor packs…</span></div>
+            <p class="field-hint">Drag a pack straight onto a grid square. The star pins one to the top of its shelf, on this screen only.</p>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="encounter" data-scope="dm">
+          <summary><span class="nav-title">Encounter settings</span><span class="scope-badge">DM</span></summary>
+          <div class="nav-body">
+            <article class="now-playing" id="now-playing">
+              <p class="eyebrow">Now playing</p>
+              <h3 id="now-playing-title">No encounter loaded</h3>
+              <p class="now-playing-where">
+                <span id="now-playing-place">Pick an encounter to set the table</span>
+                <span class="status-chip" id="now-playing-status" hidden></span>
+              </p>
+              <p class="now-playing-counts" id="now-playing-counts" hidden></p>
+              <button class="button primary wide" id="open-encounters" type="button">Load encounter…</button>
+            </article>
+
+            <details class="sub-section" data-section="places">
+              <summary><span class="nav-title">Places &amp; maps</span></summary>
+              <div class="nav-body">
+                <div class="place-list" id="place-list"><span class="muted">Loading places…</span></div>
+                <p class="field-hint">A place owns its maps and its coordinate system. Many encounters can share one. Places are authored with the DND CLI.</p>
+              </div>
+            </details>
+
+            <details class="sub-section" data-section="geometry">
+              <summary><span class="nav-title">Board geometry</span></summary>
+              <div class="nav-body" id="grid-geometry">
+                <p class="scope-note">The coordinate system every token position is in — shared with the whole table.</p>
+                <label class="range-field"><span>Board width <output id="grid-columns-output">48 squares</output></span><input id="grid-columns" type="range" min="8" max="128" step="1" value="48"></label>
+                <label class="range-field"><span>Board height <output id="grid-rows-output">32 squares</output></span><input id="grid-rows" type="range" min="8" max="128" step="1" value="32"></label>
+                <label class="range-field"><span>Square size <output id="grid-size-output">32 px</output></span><input id="grid-size" type="range" min="16" max="256" step="1" value="32"></label>
+                <label class="range-field"><span>Square scale <output id="grid-feet-output">5 ft</output></span><input id="grid-feet" type="range" min="1" max="20" step="1" value="5"></label>
+                <label class="range-field"><span>Horizontal offset <output id="grid-x-output">0 px</output></span><input id="grid-x" type="range" min="-128" max="128" step="1" value="0"></label>
+                <label class="range-field"><span>Vertical offset <output id="grid-y-output">0 px</output></span><input id="grid-y" type="range" min="-128" max="128" step="1" value="0"></label>
+                <p class="field-hint">Line colour, strength, and whether the grid shows at all are yours alone — those are in <strong>Display settings</strong>.</p>
+              </div>
+            </details>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="environment" data-scope="dm">
+          <summary><span class="nav-title">Environment effects</span><span class="scope-badge">DM</span></summary>
+          <div class="nav-body" id="environment-controls">
+            <div class="brush-tools" role="group" aria-label="Environment tool">
+              <button class="brush-button active" id="brush-move" type="button">Move</button>
+              <button class="brush-button" id="brush-flame" type="button">Flame</button>
+              <button class="brush-button" id="brush-extinguish" type="button">Extinguish</button>
+              <button class="brush-button" id="brush-light" type="button">Light</button>
+            </div>
+            <div class="effect-options">
+              <label class="field"><span>Effect</span><select id="effect-type"><option value="fire">Fire</option><option value="smoke">Smoke</option></select></label>
+              <label class="field"><span>Shape</span><select id="area-shape"><option value="circle">Circle</option><option value="square">Square</option></select></label>
+              <label class="field"><span>Radius</span><select id="area-radius">
+                <option value="5">5 ft</option>
+                <option value="10" selected>10 ft</option>
+                <option value="15">15 ft</option>
+                <option value="25">25 ft</option>
+                <option value="40">40 ft</option>
+              </select></label>
+            </div>
+            <button class="button wide" id="clear-effects" type="button">Clear this floor’s effects</button>
+            <p class="field-hint">Pick <strong>Flame</strong>, then click the map to drop the radius or drag to paint — each patch is a single object. Switch to <strong>Extinguish</strong> and click any patch to snuff the whole thing.</p>
+            <hr class="nav-rule">
+            <label class="toggle fog-toggle"><input type="checkbox" id="fog-enabled"><span>Darkness and light</span></label>
+            <div class="field-row">
+              <label class="field">Light source<select id="light-kind">
+                <option value="candle">Candle · 5/10 ft</option>
+                <option value="torch" selected>Torch · 20/40 ft</option>
+                <option value="lantern">Coal-oil lantern · 30/60 ft</option>
+                <option value="bullseye">Bullseye lantern · 60/120 ft</option>
+              </select></label>
+            </div>
+            <div class="field-row" id="fog-mode-row">
+              <label class="field">Showing<select id="fog-mode">
+                <option value="dynamic" selected>What they can see</option>
+                <option value="revealed">Everything (off)</option>
+                <option value="hidden">Nothing (lights out)</option>
+              </select></label>
+              <label class="field">This floor<select id="fog-ambient">
+                <option value="bright">Daylight</option>
+                <option value="dim">Dim</option>
+                <option value="dark">Dark</option>
+              </select></label>
+            </div>
+            <p class="field-hint">Only floors set <strong>Dim</strong> or <strong>Dark</strong> ever draw darkness, so a street at noon is untouched. <strong>Everything (off)</strong> is the panic button — one click and every screen is back to the plain board. <kbd>F</kbd> toggles it.</p>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="affiliations" data-scope="dm">
+          <summary><span class="nav-title">Affiliations</span><span class="scope-badge">DM</span></summary>
+          <div class="nav-body" id="affiliation-controls">
+            <div class="affiliation-list" id="affiliation-list"></div>
+            <div class="affiliation-add" id="affiliation-add" hidden>
+              <input id="affiliation-name" type="text" maxlength="40" placeholder="New outfit or clan">
+              <button class="button compact" id="add-affiliation" type="button">Add</button>
+            </div>
+            <p class="field-hint" id="affiliation-hint"></p>
+          </div>
+        </details>
+
+        <details class="nav-section" data-section="table" data-scope="all">
+          <summary><span class="nav-title">Players &amp; connection</span></summary>
+          <div class="nav-body">
+            <div id="connected-list" class="connected-list"><span class="muted">No players connected</span></div>
+            <button class="button wide dm-only" id="show-lobby-button" type="button">Add another player</button>
+          </div>
+        </details>
+
+      </section>
+    </aside>
+
+    <section class="board-viewport" id="board-viewport" aria-label="Game board" tabindex="-1">
+      <div class="empty-board" id="empty-board">
+        <div class="brand-mark">L</div>
+        <p>The table is waiting.</p>
+      </div>
+      <div class="board-surface" id="board-surface" hidden>
+        <img id="map-image" alt="Shared battle map" draggable="false">
+        <img id="map-overlay" alt="" draggable="false" hidden aria-hidden="true">
+        <canvas id="grid-canvas" aria-hidden="true"></canvas>
+        <div id="effects-layer" class="effects-layer" aria-hidden="true"></div>
+        <canvas id="fog-canvas" aria-hidden="true"></canvas>
+        <div id="tokens-layer" class="tokens-layer"></div>
+        <div id="actor-selection-box" class="actor-selection-box" hidden aria-hidden="true"></div>
+      </div>
+      <div id="actor-tooltip" class="actor-tooltip" role="tooltip" hidden></div>
+      <div class="movement-hint">Pan: two-finger swipe or Space + drag · Zoom: pinch or wheel</div>
+      <div class="zoom-readout" id="zoom-readout">100%</div>
+    </section>
+  </main>
+
+  <!-- Everything here is this screen's own and never leaves it. The grid's
+       geometry is the opposite — it is the coordinate system every token
+       position is expressed in, so it has to be identical for everyone and
+       lives with the encounter, in the side navigation, under the DM. -->
+  <dialog class="display-dialog" id="display-dialog">
+    <button class="dialog-close" id="close-display" type="button" aria-label="Close">×</button>
+    <p class="eyebrow">Your screen only</p>
+    <h2>Display settings</h2>
+    <p class="dialog-lede">Nobody else sees any of this. The table style, the grid you draw over the map, and how the figures stand are yours alone.</p>
+    <label class="field"><span>Table style</span>
+      <select id="theme-select">
+        <option value="western">🤠 Western</option>
+        <option value="dark-castle">🏰 Dark Castle</option>
+        <option value="space">🚀 Space</option>
+        <option value="elvish">🍃 Elvish</option>
+        <option value="dwarven">⚒ Dwarven</option>
+        <option value="knightly">🛡 Knightly</option>
+      </select>
+    </label>
+    <label class="toggle"><input id="grid-visible" type="checkbox" checked><span>Show the grid</span></label>
+    <label class="toggle"><input id="flat-minis" type="checkbox"><span>Lay the minis flat</span></label>
+    <p class="field-hint">Standing figures become top-down tokens, so nothing is hidden behind a tall mini.</p>
+    <label class="toggle"><input id="item-glow" type="checkbox" checked><span>Light over dropped items</span></label>
+    <p class="field-hint">Gear sits in a quarter of a square and disappears into a crowded floor. A slow shaft of light stands over each piece. Hold <strong>Alt</strong> at any time to name every item on the floor at once.</p>
+    <label class="field inline-field"><span>Line colour</span><input id="grid-color" type="color" value="#d8bd83"></label>
+    <label class="range-field"><span>Line strength <output id="grid-strength-output">42%</output></span><input id="grid-strength" type="range" min="0" max="100" step="1" value="42"></label>
+    <button class="button wide" id="grid-reset" type="button">Reset to campaign default</button>
+  </dialog>
+
+  <!-- Both ends of a new exit are placed; only the words are left, and those
+       are the one thing the board must never invent for the author. -->
+  <dialog class="exit-dialog" id="exit-dialog">
+    <button class="dialog-close" id="close-exit-dialog" type="button" aria-label="Cancel">×</button>
+    <p class="eyebrow">New exit</p>
+    <h2>What does it say?</h2>
+    <p class="field-hint">Each end gets its own words, because a stair reads differently from the top and the bottom. Whatever you write here is what the player is offered, exactly as you write it — the floor it leads to is shown separately, so a label is allowed to keep a secret.</p>
+    <label class="field">
+      <span>Standing at <strong id="exit-dialog-from"></strong>, offer</span>
+      <input id="exit-from-label" type="text" maxlength="60" placeholder="Down the narrow stair">
+    </label>
+    <label class="field">
+      <span>Standing at <strong id="exit-dialog-to"></strong>, offer</span>
+      <input id="exit-to-label" type="text" maxlength="60" placeholder="Up into the barroom">
+    </label>
+    <button class="button wide" id="save-exit" type="button">Write it to the place</button>
+  </dialog>
+
+  <dialog class="help-dialog" id="help-dialog">
+    <button class="dialog-close" id="close-help" type="button" aria-label="Close">×</button>
+    <p class="eyebrow">How to connect</p>
+    <h2>No server required</h2>
+    <ol>
+      <li>The host creates one player seat and copies its offer code.</li>
+      <li>The player opens this page, chooses <em>Join as player</em>, and pastes that offer.</li>
+      <li>The player creates an answer code and sends it back.</li>
+      <li>The host pastes the answer into the matching seat. The board opens when the direct connection succeeds.</li>
+    </ol>
+    <p>Two-finger trackpad swipes pan the map; pinch gestures and a traditional mouse wheel zoom. Left-drag empty ground to box-select actors; Space-drag, middle-drag, or right-drag also pans. Click empty ground or press Escape to deselect, or Cmd/Ctrl+A to select everything on the floor you are looking at. With actors selected, arrows or WASD move the group, Cmd/Ctrl+C and Cmd/Ctrl+V copy and paste it onto the floor showing, Delete removes it for the host, Q/E rotate a single selection, and C toggles its sheet from the right. Double-click or double-tap an actor to open the same sheet. Without a selection, arrow keys pan the map. With a sheet open, + increases HP and − decreases HP, and every other board key keeps working underneath it.</p>
+    <p><strong>Floors, and the exits between them.</strong> Every screen shows the floor its own character is standing on — the priest is in the cellar and the party is upstairs, and both screens are right at once. A player changes floor by <em>taking an exit</em>: a link with two ends, each a square the encounter designer marked, carrying the words they wrote for it. Stand on one and <strong>Ways out</strong> offers those words; picking it moves your character to the other end and takes your screen with it. Squares that lead somewhere are marked faintly on the board. The DM's floor switcher is a camera and carries nobody — each button counts the tokens on that floor, and <strong>Bring the table to this floor</strong> is the one way to hold every screen on yours for a reveal, until you release it or a player takes an exit of their own. <strong>Ways out → Draw an exit</strong> makes one right here, live while <code>dnd encounter serve</code> is running: click the square it leaves from, switch floors, click where it comes out, then give each end its own words. Clicking an exit already on the board offers to remove it. This writes the <em>place</em>, so every encounter set there gets the stair — it goes through <code>dnd place exit</code>'s own code, so the board cannot author one the CLI would refuse.</p>
+    <p><strong>The sheet is the inspector.</strong> Double-click an actor, or press C with it selected, and its sheet opens on the right: its face, its statistics, what the table knows about it, and every control that writes to it. Health, armour, the damage threshold, the controller, rotation, size, inventory, notes, damage, and removal all live there, shown only to the DM or to the seat that controls the piece. A single click only selects — the sheet covers a good part of the map, so it opens when you ask for it and not before. Nothing about an actor is edited from the left-hand panel any more.</p>
+    <p><strong>The bar and the rail.</strong> The title bar says which campaign and which scene, then one chip per seat — bone for a seat nobody has taken, amber for one waiting on its code, green for a player at the table. On the right sit View as player, Fit map, <em>Save</em> — live only while `dnd encounter serve` is running — and the menu carrying your name, Load encounter, Display settings, Players &amp; connection, and this Help. The sidebar collapses to a column of icons rather than to nothing, so the floor switcher and the library stay one click away with the map at full width.</p>
+    <p>The host adds actors by dragging packs from the library onto a grid square. The library is shelves: non-player characters grouped by the outfit they ride for, creatures, then <strong>Weapons</strong>, <strong>Explosives</strong>, <strong>Gear</strong>, and <strong>Scenery</strong>. One search box covers all of it and matches names, affiliations, and a pack's own description of itself, so "ring" finds the Moyer Ring and the ring-gun both. The star on a card pins it to the top, on your screen only. Player characters are not in the library — <strong>The party</strong> lists every one in the campaign, seated or not, and the DM drags an unseated one onto a square. The Flame tool drops fire or smoke as a radius in feet (or paints it by dragging); each patch is one object you can wipe out with the Extinguish tool.</p>
+    <p><strong>Affiliations are the DM's alone.</strong> On the host's screen every actor's outline is painted by its primary affiliation, so you can read the room at a glance: bone white means unplaced, a named outfit wears its own colour. The host manages the roster — rename, recolour from the western palette, add, or remove — in the <strong>Affiliations</strong> panel, and assigns an actor from its sheet. Players get none of it. No panel, no line on the hover, no chip on the sheet, and every outline on a player's board is bone white, so who rides with whom stays something the table has to find out in play. View as player shows you exactly that.</p>
+    <p><strong>Names, health, and secrets.</strong> Open an actor's sheet and click its name to rename it — the new name reaches every screen. Hit points belong to the DM alone, except for the party, who always see their own; the DM toggles each bar on or off from the sheet. An actor is described by a list of facts rather than one paragraph: the DM types a fact and either tells the table, holds it back for a later reveal, or keeps it DM-only. Click the portrait for a full-size look at the actor.</p>
+    <p><strong>Roll the Bones</strong> is available to everyone. A roll request goes to the host, which creates the authoritative result and broadcasts it so the same 3D dice animate and settle on the same values on every connected screen. The roller's name and result are retained in table history.</p>
+    <p><strong>Network limitation:</strong> this serverless edition is intended for devices on the same Wi-Fi or wired network. Some browsers or restrictive networks may block a direct connection.</p>
+  </dialog>
+
+  <aside class="actor-sheet" id="actor-sheet" aria-hidden="true" aria-label="Actor sheet">
+    <button class="sheet-close" id="close-actor-sheet" type="button" aria-label="Close actor sheet">×</button>
+    <header class="sheet-hero">
+      <button class="portrait-button" id="actor-portrait-button" type="button" hidden aria-label="View the full portrait">
+        <img id="actor-portrait" alt="">
+      </button>
+      <div class="sheet-headline">
+        <p class="sheet-kicker" id="actor-kind">Actor reference</p>
+        <h2 id="actor-title">Actor</h2>
+        <p id="actor-meta" class="sheet-meta"></p>
+      </div>
+    </header>
+    <div class="sheet-scroll">
+      <!-- Only the statistics the actor actually has. A person has health, armour
+           and a speed; a thrown bomb has none of the three, and printing "1 HP,
+           AC 10, threshold 0" over it invents a fight nobody is having. Each
+           tile is shown or hidden by updateActorSheet. -->
+      <section class="sheet-vitals" id="sheet-vitals" aria-label="Core statistics">
+        <div class="sheet-hp" id="vital-hp">
+          <span>Hit Points</span>
+          <strong id="actor-hp">0 / 0</strong>
+          <div class="hp-stepper" id="hp-stepper">
+            <button id="decrease-hp" type="button" aria-label="Decrease hit points">−</button>
+            <button id="increase-hp" type="button" aria-label="Increase hit points">+</button>
+          </div>
+          <button class="hp-visibility" id="actor-hp-visibility" type="button" hidden aria-pressed="true">Bar shown</button>
+        </div>
+        <div id="vital-ac"><span>Armor Class</span><strong id="actor-ac">10</strong></div>
+        <div id="vital-speed"><span>Speed</span><strong id="actor-speed">0 ft.</strong></div>
+        <div id="vital-space"><span>Space</span><strong id="actor-space">1×1</strong></div>
+        <div id="vital-threshold"><span>Threshold</span><strong id="actor-threshold">0</strong></div>
+      </section>
+      <p id="actor-health-access" class="sheet-access"></p>
+      <div class="sheet-affiliation dm-only">
+        <span class="affiliation-chip" id="affiliation-chip"><i></i><b></b></span>
+        <label class="field" id="affiliation-field" hidden>
+          <span>Primary affiliation</span>
+          <select id="actor-affiliation"></select>
+        </label>
+      </div>
+
+      <!-- Every writable thing about this piece, in one place. The sidebar used
+           to carry a second copy of it; two panes describing one actor is one
+           pane too many, and the sheet is the one already showing its face, its
+           name, and what the table knows about it. Which rows appear is decided
+           by renderSheetControls: by what the actor is, and by whether this
+           screen is the DM's or the seat that controls it. -->
+      <section class="sheet-section sheet-manage-section" id="actor-manage-section" hidden>
+        <h3>On the table</h3>
+        <div class="sheet-manage" id="actor-manage">
+          <div class="stat-grid">
+            <label class="field" id="manage-hp-current-field"><span>Current HP</span><input id="manage-hp-current" type="number" min="0"></label>
+            <label class="field" id="manage-hp-max-field"><span>Maximum HP</span><input id="manage-hp-max" type="number" min="1"></label>
+            <label class="field" id="manage-ac-field"><span>Armor class</span><input id="manage-ac" type="number" min="0"></label>
+            <label class="field" id="manage-threshold-field"><span>Damage threshold</span><input id="manage-threshold" type="number" min="0"></label>
+          </div>
+          <label class="toggle manage-toggle" id="manage-indestructible-field"><input id="manage-indestructible" type="checkbox"><span>Indestructible</span></label>
+          <label class="field" id="manage-controller-field"><span>Controller</span><select id="manage-controller"></select></label>
+          <div class="field" id="manage-rotation-field">
+            <span>Rotation</span>
+            <div class="rotation-tools" id="manage-rotation">
+              <button type="button" data-rotation="north">N</button><button type="button" data-rotation="east">E</button><button type="button" data-rotation="south">S</button><button type="button" data-rotation="west">W</button>
+            </div>
+          </div>
+          <label class="field" id="manage-size-field"><span>Size on the board</span>
+            <select id="manage-size">
+              <option value="0.5x0.5">Small — a quarter square</option>
+              <option value="1x1">1 × 1 square</option>
+              <option value="1x2">1 × 2 squares</option>
+              <option value="2x2">2 × 2 squares</option>
+              <option value="3x3">3 × 3 squares</option>
+              <option value="">Whatever the pack says</option>
+            </select>
+          </label>
+          <label class="field" id="manage-inventory-field"><span>Inventory</span><textarea id="manage-inventory" rows="3" placeholder="One item per line"></textarea></label>
+          <label class="field" id="manage-notes-field"><span>Notes</span><textarea id="manage-notes" rows="3" placeholder="Conditions, rules, or reminders"></textarea></label>
+          <div class="damage-row" id="manage-damage-row">
+            <input id="manage-damage-amount" type="number" min="0" value="1" aria-label="Damage amount">
+            <button class="button" id="manage-apply-damage" type="button">Apply damage</button>
+          </div>
+          <button class="button wide" id="manage-destroy" type="button" hidden>Use it up</button>
+          <button class="button danger wide" id="manage-remove" type="button">Remove from scene</button>
+        </div>
+      </section>
+      <section class="sheet-section" id="actor-gallery-section" hidden>
+        <h3>Images</h3>
+        <div class="sheet-gallery" id="actor-gallery"></div>
+      </section>
+      <section class="sheet-section sheet-dossier-section" id="actor-dossier-section" hidden>
+        <h3>Dossier</h3>
+        <div class="sheet-dossier" id="actor-dossier"></div>
+      </section>
+      <section class="sheet-section sheet-facts-section">
+        <h3>What is known</h3>
+        <ul class="fact-list" id="actor-fact-list"></ul>
+        <p class="fact-empty" id="actor-fact-empty"></p>
+        <div class="fact-composer" id="fact-composer" hidden>
+          <label class="field">
+            <span>Record a new fact</span>
+            <!-- Keep this placeholder free of campaign content: it sits on screen
+                 whenever a sheet is open, and an example drawn from the plot is a
+                 spoiler the table can read over the DM's shoulder. -->
+            <textarea id="fact-text" rows="2" maxlength="400" placeholder="Something the table just learned."></textarea>
+          </label>
+          <div class="fact-composer-actions">
+            <button class="button compact" type="button" data-visibility="public">Tell the table</button>
+            <button class="button compact" type="button" data-visibility="staged">Hold back</button>
+            <button class="button compact" type="button" data-visibility="secret">DM only</button>
+          </div>
+        </div>
+      </section>
+      <section class="sheet-section" id="actor-item-section" hidden>
+        <h3>The Object</h3>
+        <div class="item-controls" id="item-controls"></div>
+        <dl id="actor-item" class="sheet-entries"></dl>
+        <div class="item-contents" id="item-contents" hidden>
+          <h4>Inside</h4>
+          <ul id="item-contents-list"></ul>
+        </div>
+      </section>
+      <section class="sheet-section" id="actor-attacks-section" hidden>
+        <h3>Actions &amp; Attacks</h3>
+        <dl id="actor-attacks" class="sheet-entries"></dl>
+      </section>
+      <section class="sheet-section" id="actor-abilities-section" hidden>
+        <h3>Features &amp; Abilities</h3>
+        <dl id="actor-abilities" class="sheet-entries"></dl>
+      </section>
+      <section class="sheet-section" id="actor-rules-section">
+        <h3>Traits &amp; Rules</h3>
+        <dl id="actor-rules" class="sheet-entries"></dl>
+      </section>
+      <p class="sheet-keyboard" id="sheet-keyboard"></p>
+    </div>
+  </aside>
+
+  <div class="dice-stage" id="dice-stage" aria-hidden="true">
+    <div class="board-dice-tray" id="board-dice-tray">
+      <div class="dice-loading" id="dice-loading">Setting out the bones…</div>
+      <div class="dice-readout" id="dice-readout" hidden>
+        <strong id="dice-total">0</strong><span id="dice-breakdown"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- One card per roll, newest at the bottom — board-dice.js fills this. -->
+  <div class="dice-stack" id="dice-results" role="status" aria-live="polite"></div>
+
+  <div class="dice-launcher" id="dice-launcher" data-open="false">
+    <div class="dice-tools" id="dice-tools">
+      <div class="board-dice-bar" id="board-dice-bar">
+        <button class="die-btn" data-sides="20" type="button" aria-label="d20" title="d20 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20.5,7.5 20.5,16.5 12,21.5 3.5,16.5 3.5,7.5"/><polygon points="12,6.5 7,16 17,16"/></svg><i>d20</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="12" type="button" aria-label="d12" title="d12 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20.5,9 17,20 7,20 3.5,9"/><polygon points="12,7 16,10.5 14.5,15.5 9.5,15.5 8,10.5"/></svg><i>d12</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="100" type="button" aria-label="d100" title="d100 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20,10 12,21.5 4,10"/><path d="M4 10h16"/></svg><i>d100</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="10" type="button" aria-label="d10" title="d10 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20,10 12,21.5 4,10"/><path d="M4 10h16"/></svg><i>d10</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="8" type="button" aria-label="d8" title="d8 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20,12 12,21.5 4,12"/><path d="M4 12h16"/></svg><i>d8</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="6" type="button" aria-label="d6" title="d6 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6,8.5 15,8.5 15,18 6,18"/><polygon points="6,8.5 9,5.5 18,5.5 15,8.5"/><polygon points="15,8.5 18,5.5 18,15 15,18"/></svg><i>d6</i><b class="die-count">0</b>
+        </button>
+        <button class="die-btn" data-sides="4" type="button" aria-label="d4" title="d4 · left-click +1, right-click −1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,3 21,20 3,20"/><path d="M12 3v9M12 12 4 20M12 12 20 20"/></svg><i>d4</i><b class="die-count">0</b>
+        </button>
+      </div>
+      <div class="dice-extra">
+        <span class="dice-modifier"><button id="dice-mod-down" type="button" aria-label="Modifier down">−</button><strong id="dice-modifier">+0</strong><button id="dice-mod-up" type="button" aria-label="Modifier up">+</button></span>
+      </div>
+      <div class="dice-tools-actions">
+        <button class="button" id="dice-clear" type="button">Clear</button>
+        <button class="button primary" id="dice-roll" type="button" disabled>Roll</button>
+      </div>
+      <button type="button" class="dice-rattle on" id="dice-rattle" aria-pressed="true" title="Sound as the dice roll and strike the table">🔊 Rattle</button>
+      <button type="button" class="dice-history-link" id="dice-history-link">Roll history &rarr;</button>
+    </div>
+    <button class="dice-fab" id="dice-fab" type="button" aria-label="Dice roller" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2.5 20.5,7.5 20.5,16.5 12,21.5 3.5,16.5 3.5,7.5"/><polygon points="12,6.5 7,16 17,16"/></svg>
+    </button>
+  </div>
+
+  <aside class="dice-drawer" id="dice-drawer" aria-hidden="true">
+    <header class="dice-drawer-head"><h3>Roll history</h3><button id="dice-drawer-close" type="button" aria-label="Close history">×</button></header>
+    <ol class="dice-history" id="dice-history"></ol>
+  </aside>
+
+  <div class="roll-announcement" id="roll-announcement" role="status" aria-live="polite" hidden>
+    <span id="roll-roller"></span><strong id="roll-total"></strong><small id="roll-detail"></small>
+  </div>
+
+  <dialog class="portrait-dialog" id="portrait-dialog">
+    <button class="dialog-close" id="close-portrait" type="button" aria-label="Close portrait">×</button>
+    <img id="portrait-large" alt="">
+    <p class="portrait-caption" id="portrait-caption"></p>
+    <div class="portrait-strip" id="portrait-strip" hidden></div>
+  </dialog>
+
+  <aside class="browser-panel" id="encounter-browser" aria-hidden="true" aria-label="Encounters">
+    <header class="browser-heading">
+      <div>
+        <p class="eyebrow">Campaign</p>
+        <h2>Encounters</h2>
+      </div>
+      <button class="dialog-close" id="close-encounter-browser" type="button" aria-label="Close encounters">×</button>
+    </header>
+    <p class="browser-lede">Loading an encounter sets the table for everyone. Connected players follow immediately — they do not have to click anything.</p>
+    <div class="encounter-grid" id="encounter-grid"></div>
+    <p class="browser-footnote">Encounters are written with the DND CLI — <code>dnd make</code> — and committed to <code>campaigns/&lt;id&gt;/encounters/</code>. This panel loads them; it does not author them.</p>
+  </aside>
+
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="actor-system.js?v=21"></script>
+  <script src="campaign-system.js?v=21"></script>
+  <script src="app.js?v=21"></script>
+  <script type="module" src="board-dice.js?v=21"></script>
+</body>
+</html>

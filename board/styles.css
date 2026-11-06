@@ -1,0 +1,1342 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Metamorphous&family=Orbitron:wght@500;700;900&family=Exo+2:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&family=Uncial+Antiqua&display=swap');
+
+/* ==========================================================================
+   DESIGN TOKENS — the whole board is painted from these.
+   :root is the WESTERN table (the base look). Each body[data-theme="…"] block
+   further down redefines this same set of tokens, so switching themes actually
+   repaints fonts, surfaces, the primary accent, the secondary accent and the
+   buttons — no filters, no overlays.
+   ========================================================================== */
+:root {
+  /* Fonts */
+  --font-display: Copperplate, Rockwell, Georgia, serif;
+  --font-body: Georgia, "Times New Roman", serif;
+  --font-label: Courier, monospace;
+
+  /* Surfaces (darkest → lightest) */
+  --ink: #17110b;
+  --inset: #140f0a;
+  --panel: #241a12;
+  --panel-light: #302218;
+  --leather: #5b3825;
+
+  /* Text */
+  --paper: #e8d9b8;
+  --text-soft: #c6b48f;
+  --muted: #a99470;
+
+  /* Primary accent */
+  --primary: #7d2a1d;
+  --primary-bright: #c0533b;
+
+  /* Secondary accent */
+  --gold: #e5c477;
+  --brass: #c09a56;
+
+  /* Lines & status */
+  --edge: #6d4c30;
+  --edge-soft: #4a3b28;
+  --green: #7faf68;
+  --red: #8f3d2f;
+
+  /* Buttons */
+  --btn-top: #503622;
+  --btn-bottom: #352317;
+
+  --rarity-common: #cdbfa4;
+  --rarity-uncommon: #7faf68;
+  --rarity-rare: #6d93c8;
+  --rarity-legendary: #f0a52e;
+
+  --sidebar: 350px;
+}
+
+* { box-sizing: border-box; }
+/* The app hides things by setting .hidden, and any class carrying `display`
+   silently outvotes the attribute's UA rule — which is how a host-only control
+   ends up on a player's screen. Make the attribute win everywhere. */
+[hidden] { display: none !important; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  margin: 0;
+  color: var(--paper);
+  background: var(--ink);
+  font-family: var(--font-body);
+}
+button, input, textarea { font: inherit; }
+button { color: inherit; }
+
+.topbar {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 18px;
+  position: relative;
+  /* Above the slide-in panels (88, 90). The who menu hangs off this bar and
+     drops down over whatever is beside it, and a menu you cannot click is worse
+     than no menu — but everything in the bar shares this stacking context, so
+     the bar itself has to win, not just the dropdown. The dice keep the top of
+     the pile (300+): they are thrown over the whole table on purpose. */
+  z-index: 200;
+  background:
+    linear-gradient(rgba(20, 12, 8, .78), rgba(20, 12, 8, .92)),
+    repeating-linear-gradient(90deg, var(--leather) 0 3px, var(--panel-light) 3px 48px, var(--panel) 49px 51px);
+  border-bottom: 2px solid var(--edge);
+  box-shadow: 0 5px 20px #000a;
+}
+/* Campaign — encounter, as one line. The campaign is the constant and takes the
+   display face; the encounter changes all night and is the softer half, so the
+   eye reads "which scene" without losing "which campaign". */
+.title-block { display: flex; align-items: baseline; gap: 10px; min-width: 0; text-decoration: none; }
+.campaign-name { flex: 0 1 auto; color: var(--gold); font-family: var(--font-display); font-size: 19px; font-weight: 700; text-shadow: 2px 2px #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title-dash { color: var(--edge); }
+.encounter-name { flex: 1 1 auto; min-width: 0; color: var(--text-soft); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title-block:hover .campaign-name { color: var(--paper); }
+
+/* One chip per seat. The dot is the whole status readout — bone for a seat that
+   has never connected, amber for one waiting on its answer code, green for a
+   player actually at the table. */
+.seat-chips { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.seat-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 132px;
+  padding: 5px 10px; border: 1px solid var(--edge); border-radius: 999px;
+  background: rgb(from var(--inset) r g b / 0.67); color: var(--muted);
+  font: 12px var(--font-body); cursor: pointer; white-space: nowrap;
+}
+.seat-chip:hover { border-color: var(--brass); color: var(--text-soft); }
+.seat-chip span { overflow: hidden; text-overflow: ellipsis; }
+.seat-chip i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: #756451; box-shadow: 0 0 0 2px #0008; }
+.seat-chip[data-status="waiting"] i { background: #d49e49; box-shadow: 0 0 8px #d49e49; }
+.seat-chip[data-status="online"] i { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.seat-chip[data-status="online"] { color: var(--text-soft); }
+
+/* Nothing in the bar may wrap: a two-line button grows taller than the bar it
+   sits in and pushes out of it. */
+.top-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.top-actions > * { white-space: nowrap; flex: 0 0 auto; }
+
+/* Who is at this keyboard, and the handful of things that are not about one
+   actor or one scene: help, loading an encounter, this screen's own settings. */
+.who-menu { position: relative; }
+.who-button {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px;
+  border: 1px solid var(--edge); border-radius: 4px; background: rgb(from var(--inset) r g b / 0.67);
+  color: var(--text-soft); font: 13px var(--font-body); cursor: pointer;
+}
+.who-button:hover { border-color: var(--brass); }
+.who-role { color: var(--brass); font: 700 9px var(--font-label); letter-spacing: .1em; text-transform: uppercase; }
+.who-button strong { color: var(--paper); font-weight: 600; }
+.who-caret { color: var(--muted); font-size: 10px; }
+.who-dropdown {
+  position: absolute; z-index: 30; right: 0; top: calc(100% + 7px); width: 246px;
+  padding: 12px; border: 1px solid var(--edge); background: var(--panel);
+  box-shadow: 0 16px 44px #000b;
+}
+.who-dropdown .field { margin: 0 0 10px; }
+.menu-item {
+  display: block; width: 100%; padding: 8px 10px; border: 0; border-top: 1px solid var(--edge-soft);
+  background: none; color: var(--text-soft); font: 13px var(--font-body); text-align: left; cursor: pointer;
+}
+.menu-item:hover { background: var(--leather); color: var(--paper); }
+
+.display-dialog {
+  width: min(420px, 92vw); padding: 20px 22px 24px;
+  border: 3px double var(--brass); background: var(--panel); color: var(--text-soft);
+  box-shadow: 0 24px 90px #000;
+}
+.display-dialog::backdrop { background: #06040292; backdrop-filter: blur(4px); }
+.display-dialog h2 { margin: 2px 0 8px; color: var(--gold); font-family: var(--font-display); }
+.dialog-lede { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+/* --- "Viewing as player" bar: the DM rehearsing what the table can see --- */
+/* It takes real height rather than floating, so every fixed panel measured from
+   the top of the shell has to be pushed down by exactly the same amount. That is
+   what --preview-bar is for: 0 normally, the bar's height while previewing. */
+body.previewing-player { --preview-bar: 38px; }
+.preview-bar {
+  position: relative; z-index: 199; height: 38px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; padding: 0 18px;
+  background: linear-gradient(rgb(from var(--primary) r g b / .92), rgb(from var(--primary) r g b / .78));
+  border-bottom: 1px solid var(--gold); box-shadow: 0 4px 16px #0007;
+  color: var(--paper); font-size: 13px;
+}
+.preview-bar strong { color: var(--paper); letter-spacing: .04em; text-transform: uppercase; font: 700 12px/1 var(--font-display); }
+.preview-eye { font-size: 15px; line-height: 1; }
+.preview-note { color: rgb(from var(--paper) r g b / .78); font-size: 12px; }
+.preview-bar .button { margin-left: auto; padding: 4px 14px; font-size: 12px; }
+
+.app-shell { height: calc(100% - 68px - var(--preview-bar, 0px)); display: grid; grid-template-columns: var(--sidebar) 1fr; }
+
+/* Collapsed, the sidebar is the rail and nothing else — 54px of icons instead of
+   the old nothing-at-all, so shutting the panel to see more map never costs you
+   the floor switcher. */
+body.rail-only { --sidebar: 54px; }
+body.rail-only .board-controls, body.rail-only .lobby-panel { display: none; }
+
+
+.nav-rail {
+  flex: 0 0 54px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-height: 0; overflow-y: auto; scrollbar-width: none;
+  padding: 10px 0; border-right: 1px solid var(--edge); background: rgb(from var(--ink) r g b / 0.55);
+}
+.nav-rail::-webkit-scrollbar { display: none; }
+.rail-group { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; }
+.rail-foot { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--edge-soft); }
+.rail-toggle, .rail-button {
+  width: 38px; height: 38px; display: grid; place-items: center; padding: 0;
+  border: 1px solid transparent; border-radius: 5px; background: none;
+  color: var(--muted); cursor: pointer;
+}
+.rail-toggle { margin-bottom: 8px; color: var(--brass); }
+.rail-toggle svg, .rail-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.rail-toggle:hover, .rail-button:hover { border-color: var(--edge); background: rgb(from var(--panel-light) r g b / 0.8); color: var(--paper); }
+.rail-button.active { border-color: var(--brass); background: var(--leather); color: var(--gold); }
+.rail-toggle:focus-visible, .rail-button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+/* The rail and the panel sit side by side inside it; only the panel scrolls, so
+   the icons stay put however far down the library you are.
+
+   `min-height: 0` is load-bearing and easy to lose. A grid item's automatic
+   minimum size is its content, so without it the sidebar grows to whatever the
+   open sections add up to — five thousand pixels with everything expanded — and
+   the panel's own `overflow-y: auto` never fires, because the panel is then
+   exactly as tall as the thing it was supposed to be scrolling. This used to
+   work by accident: the scroll lived on the sidebar itself, and being a scroll
+   container is what silently resolved that minimum to zero. `overflow: hidden`
+   keeps the clamp honest by giving the rounding nowhere to leak. */
+.sidebar {
+  position: relative; z-index: 10; display: flex; align-items: stretch;
+  min-height: 0; overflow: hidden;
+  background:
+    linear-gradient(110deg, transparent, #0002),
+    repeating-linear-gradient(0deg, var(--panel-light) 0 2px, var(--panel) 2px 7px);
+  border-right: 2px solid var(--edge);
+  box-shadow: 5px 0 22px #0008;
+}
+.sidebar > .panel { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; }
+.panel { padding: 24px; }
+.eyebrow { margin: 0 0 5px; color: var(--brass); font: 12px var(--font-label); text-transform: uppercase; letter-spacing: 2px; }
+h1, h2, h3 { color: var(--gold); font-family: var(--font-display); font-weight: 700; }
+h1 { margin: 0 0 10px; font-size: 29px; line-height: 1.15; }
+h2 { margin: 0; font-size: 22px; }
+h3 { margin: 0; font-size: 16px; }
+.lede { color: var(--text-soft); line-height: 1.45; margin: 0 0 20px; }
+.muted { color: var(--muted); }
+.network-note { margin: 22px 0 0; color: var(--muted); font-style: italic; font-size: 13px; line-height: 1.4; }
+
+.button, .mode-button, .icon-button {
+  border: 1px solid var(--edge); border-radius: 3px; cursor: pointer;
+  background: linear-gradient(var(--btn-top), var(--btn-bottom)); color: var(--paper);
+  box-shadow: inset 0 1px #fff1, 0 2px 5px #0005;
+  transition: filter .12s, transform .12s;
+}
+.button:hover, .mode-button:hover, .icon-button:hover { filter: brightness(1.18); }
+.button:active, .mode-button:active, .icon-button:active { transform: translateY(1px); }
+.button { padding: 8px 12px; }
+.button.primary { background: linear-gradient(var(--primary-bright), var(--primary)); border-color: var(--primary-bright); }
+.button.quiet { padding: 6px 10px; background: rgb(from var(--inset) r g b / 0.67); color: var(--text-soft); }
+.button.compact { padding: 7px 10px; white-space: nowrap; }
+.button.wide { width: 100%; }
+.button:disabled { cursor: not-allowed; opacity: .45; filter: grayscale(.6); }
+
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0; }
+.mode-button { padding: 9px 4px; color: var(--muted); border-radius: 0; }
+.mode-button:first-child { border-radius: 3px 0 0 3px; }
+.mode-button:last-child { border-radius: 0 3px 3px 0; }
+.mode-button.active { background: var(--primary); color: var(--paper); border-color: var(--brass); }
+.steps { padding-left: 22px; color: var(--text-soft); font-size: 14px; line-height: 1.45; }
+
+.field { display: grid; gap: 5px; margin: 12px 0; color: var(--text-soft); font-size: 14px; }
+.field > span, .range-field > span { display: flex; justify-content: space-between; }
+input[type="text"], input[type="number"], textarea, select {
+  min-width: 0; width: 100%; border: 1px solid var(--edge); border-radius: 2px;
+  background: var(--inset); color: var(--paper); padding: 8px 9px; outline: none;
+}
+textarea { resize: vertical; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.35; }
+input:focus, textarea:focus, select:focus { border-color: var(--brass); box-shadow: 0 0 0 2px rgb(from var(--brass) r g b / 0.13); }
+input:disabled, textarea:disabled, select:disabled { opacity: .62; cursor: not-allowed; }
+.input-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+.inline-field { grid-template-columns: 1fr auto; align-items: center; }
+input[type="color"] { width: 38px; height: 30px; padding: 2px; border: 1px solid var(--edge); background: var(--inset); }
+
+.seat-list { display: grid; gap: 12px; margin-top: 15px; }
+.seat-card { padding: 12px; border: 1px solid var(--edge); background: rgb(from var(--inset) r g b / 0.72); }
+.seat-card h3 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+.seat-state { color: var(--muted); font: 11px var(--font-label); }
+.seat-state.online { color: var(--green); }
+.seat-card textarea { height: 78px; }
+.seat-actions { display: flex; gap: 6px; }
+.seat-actions .button { flex: 1; font-size: 13px; }
+
+.panel-heading, .control-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.panel-heading { margin-bottom: 18px; }
+.icon-button { width: 30px; height: 30px; font-size: 22px; }
+.control-group { padding: 15px 0; border-top: 1px solid var(--edge); }
+.layer-control-group { border-top: 0; padding-top: 0; }
+.layer-switch { display: grid; gap: 7px; margin-top: 10px; }
+.layer-button {
+  width: 100%; padding: 9px 10px; text-align: left; border: 1px solid var(--edge);
+  background: var(--inset); color: var(--muted); cursor: pointer;
+}
+.layer-button.active { border-color: var(--brass); color: var(--gold); background: var(--leather); box-shadow: inset 3px 0 var(--brass); }
+/* How many tokens are standing on a floor, so the DM can see at a glance that
+   somebody is still down in the cellar. */
+.layer-count { float: right; padding: 0 6px; border: 1px solid var(--edge); border-radius: 9px; color: var(--muted); font: 11px var(--font-label); }
+.layer-button.active .layer-count { border-color: var(--brass); color: var(--gold); }
+
+/* Ways off this floor. Deliberately not styled as a floor switcher: taking one
+   moves your character, and it should not look like changing a camera. */
+.exit-block { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--edge); }
+.exit-list { display: grid; gap: 7px; margin: 8px 0 0; }
+.exit-list:empty { margin: 0; }
+.exit-button {
+  width: 100%; padding: 9px 10px; text-align: left; cursor: pointer;
+  border: 1px solid var(--brass); background: var(--leather); color: var(--gold);
+}
+.exit-button:hover { border-color: var(--gold); background: rgb(from var(--brass) r g b / 0.22); }
+/* Where it comes out, under the author's own sentence rather than folded into
+   it — a label is allowed to be a secret, and this line is not. */
+.exit-destination { display: block; margin-top: 2px; color: var(--muted); font: 11px var(--font-label); text-transform: uppercase; letter-spacing: 1px; }
+#pin-table.active { border-color: var(--brass); color: var(--gold); background: var(--leather); }
+/* The encounter the table is currently sitting at — the sidebar's anchor. */
+.now-playing { margin-bottom: 4px; padding: 14px; border: 1px solid var(--edge); border-left: 3px solid var(--brass); background: rgb(from var(--inset) r g b / 0.67); }
+.now-playing h3 { margin: 0 0 6px; color: var(--gold); font-size: 17px; line-height: 1.2; }
+.now-playing-where { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 0; color: var(--text-soft); font-size: 13px; }
+.now-playing-counts { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.now-playing .button { margin-top: 12px; }
+.status-chip { padding: 2px 7px; border: 1px solid var(--edge); border-radius: 2px; color: var(--muted); font: 10px var(--font-label); text-transform: uppercase; letter-spacing: 1px; }
+.status-chip[data-status="ready"] { color: var(--green); border-color: var(--green); }
+.status-chip[data-status="draft"] { color: var(--brass); border-color: var(--brass); }
+
+/* Collapsible navigation. <details> carries the open/closed state so the
+   keyboard and the screen reader get it for free. */
+.nav-section { border-top: 1px solid var(--edge); }
+.nav-section > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 13px 0; cursor: pointer; list-style: none; color: var(--paper);
+}
+.nav-section > summary::-webkit-details-marker { display: none; }
+.nav-section > summary::before {
+  content: "▸"; order: -1; margin-right: 6px; color: var(--brass); font-size: 11px;
+  transition: transform .15s ease;
+}
+.nav-section[open] > summary::before { transform: rotate(90deg); }
+.nav-section > summary:hover { color: var(--gold); }
+.nav-title { flex: 1; font: 13px var(--font-label); text-transform: uppercase; letter-spacing: 1.5px; }
+.scope-badge { color: var(--muted); font: 10px var(--font-label); text-transform: uppercase; letter-spacing: 1px; opacity: .75; }
+.nav-body { padding: 0 0 15px; }
+.grid-scope + .grid-scope { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--edge-soft); }
+.scope-note { margin: 0 0 9px; color: var(--muted); font-size: 11px; font-style: italic; }
+
+.encounter-row, .place-row { width: 100%; margin-bottom: 6px; text-align: left; display: block; }
+.encounter-row small, .place-row small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 400; }
+.encounter-row.active, .place-row.active { border-color: var(--brass); color: var(--gold); box-shadow: inset 3px 0 var(--brass); }
+/* A place's saved encounters, nested under it in the rail. Indented and
+   quieter than the place row so the hierarchy reads without a tree line. */
+.place-encounters { display: grid; gap: 4px; margin: -2px 0 8px 14px; }
+.encounter-subrow { width: 100%; text-align: left; display: block; padding: 5px 9px;
+  font-size: 12px; background: rgb(from var(--inset) r g b / 0.55); color: var(--text-soft); }
+.encounter-subrow::before { content: "↳ "; color: var(--muted); }
+.encounter-subrow.active { border-color: var(--brass); color: var(--gold); box-shadow: inset 3px 0 var(--brass); }
+.toggle { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 13px; }
+.range-field { display: grid; gap: 3px; margin: 12px 0; color: var(--text-soft); font-size: 13px; }
+.range-field output { color: var(--gold); font-family: var(--font-label); }
+input[type="range"] { width: 100%; accent-color: var(--brass); }
+.token-form { display: grid; grid-template-columns: 1fr 38px auto; gap: 7px; margin-top: 10px; }
+.token-list, .connected-list { display: grid; gap: 6px; margin-top: 10px; }
+.token-row, .connected-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: rgb(from var(--inset) r g b / 0.60); border: 1px solid var(--edge-soft); }
+.token-row.selected { border-color: var(--gold); background: var(--leather); box-shadow: inset 3px 0 var(--gold); }
+.token-swatch { width: 13px; height: 13px; border-radius: 50%; border: 1px solid rgb(from var(--paper) r g b / 0.53); }
+.token-row span:nth-child(2), .connected-row span:nth-child(2) { flex: 1; }
+.remove-token { border: 0; background: transparent; color: var(--primary-bright); cursor: pointer; font-size: 18px; }
+.minor-title { margin-top: 16px; }
+.field-hint { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-style: italic; line-height: 1.35; }
+.nav-rule { margin: 14px 0 11px; border: 0; border-top: 1px solid var(--edge); }
+/* The library is shelves now, not one long run of cards: a search box over the
+   whole thing, then Weapons / Explosives / Gear / Scenery, with the people
+   grouped by the outfit they ride for. */
+.library-search { margin: 10px 0 4px; }
+.library-search input {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--edge);
+  background: rgb(from var(--inset) r g b / 0.7); color: var(--paper); font: 13px var(--font-body);
+}
+.library-search input::placeholder { color: var(--muted); }
+.library-search input:focus { outline: none; border-color: var(--brass); }
+
+.asset-shelf { border-top: 1px solid var(--edge-soft); }
+.asset-shelf > summary {
+  display: flex; align-items: center; gap: 8px; padding: 9px 2px;
+  color: var(--text-soft); cursor: pointer; list-style: none;
+}
+.asset-shelf > summary::-webkit-details-marker { display: none; }
+.asset-shelf > summary::before { content: "›"; color: var(--brass); transition: transform .15s ease; }
+.asset-shelf[open] > summary::before { transform: rotate(90deg); }
+.asset-shelf > summary:hover { color: var(--gold); }
+.shelf-name { flex: 1; font: 12px var(--font-label); text-transform: uppercase; letter-spacing: 1.2px; }
+.shelf-count { color: var(--muted); font: 10px var(--font-label); }
+.asset-shelf[data-shelf="pinned"] .shelf-name { color: var(--gold); }
+.shelf-cards, .asset-library { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.shelf-cards { margin: 2px 0 12px; }
+.asset-library { margin-top: 4px; display: block; }
+.asset-card {
+  min-width: 0; min-height: 78px; display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 7px;
+  padding: 7px; border: 1px solid var(--edge); background: var(--ink); color: var(--text-soft); cursor: pointer; text-align: left;
+}
+.asset-card:hover { border-color: var(--brass); background: var(--panel); }
+/* Every picture the pack ships — the mini's four facings and any state variants —
+   as a strip on the actor's sheet. Clicking one opens the full-size gallery. */
+.sheet-gallery { padding: 9px 11px; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); }
+.asset-strip { display: flex; flex-wrap: wrap; gap: 5px; }
+.asset-thumb {
+  width: 38px; height: 38px; padding: 1px; cursor: pointer; border: 1px solid var(--edge-soft);
+  border-radius: 2px; background: var(--ink); opacity: .8; transition: opacity .12s, border-color .12s;
+}
+.asset-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.asset-thumb:hover { opacity: 1; border-color: var(--brass); }
+.asset-thumb:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.asset-more { color: var(--muted); font: 700 10px var(--font-label); }
+.asset-card img, .asset-placeholder { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; background: var(--ink); }
+.asset-card img.mini-art { object-fit: cover; object-position: 50% 8%; }
+.asset-placeholder { display: grid; place-items: center; color: var(--brass); font-weight: 700; border: 1px solid var(--edge); }
+/* Two lines, then an ellipsis. "Colt Army Revolver, .44" needs the second line
+   to stay distinguishable from the Navy pocket; a third would make one card
+   taller than its neighbours and leave the shelf ragged. */
+.asset-card strong { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12px; line-height: 1.2; }
+/* The pack writes its own subtitle ("Thrown incendiary"), already cased the way
+   a person would write it — capitalising it again gives Title Case Everywhere. */
+.asset-card small { display: block; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+
+/* Pinning is done to a pack while you are looking at it, so the star lives on
+   the card — but it must not drag the card or open its sheet on the way past. */
+.asset-card { position: relative; }
+.asset-pin {
+  position: absolute; top: 2px; right: 3px; width: 20px; height: 20px;
+  display: grid; place-items: center; border-radius: 3px;
+  color: var(--edge); font-size: 13px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity .12s;
+}
+.asset-card:hover .asset-pin, .asset-pin:focus-visible { opacity: 1; }
+.asset-pin:hover { color: var(--gold); background: #0006; }
+.asset-pin.pinned { opacity: 1; color: var(--gold); }
+.brush-tools, .rotation-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+.brush-tools { grid-template-columns: repeat(3, 1fr); }
+.brush-button, .rotation-tools button {
+  padding: 7px; border: 1px solid var(--edge); background: var(--inset); color: var(--muted); cursor: pointer;
+}
+.brush-button.active, .rotation-tools button.active { border-color: var(--brass); background: var(--leather); color: var(--paper); }
+.fire-brush { color: var(--primary-bright); }
+.fog-toggle { margin-top: 13px; }
+.effect-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.selection-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.selection-actions .button { font-size: 12px; }
+.environment-controls { clear: both; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+.stat-grid:empty, .stat-grid > .field[hidden] { display: none; }
+.rotation-tools { grid-template-columns: repeat(4, 1fr); margin-top: 0; }
+.damage-row { display: grid; grid-template-columns: 72px 1fr; gap: 7px; margin: 12px 0 8px; }
+.button.danger { color: var(--paper); border-color: var(--primary); background: linear-gradient(var(--primary), var(--primary)); }
+.sheet-link { display: block; color: var(--gold); margin: 10px 0; text-decoration: none; }
+.sheet-link:hover { color: var(--gold); }
+
+.board-viewport {
+  position: relative; overflow: hidden; touch-action: none; cursor: grab;
+  background:
+    radial-gradient(ellipse at center, transparent 0 30%, #0008 100%),
+    repeating-linear-gradient(45deg, var(--ink) 0 14px, var(--ink) 14px 28px);
+}
+.board-viewport.dragging { cursor: grabbing; }
+.board-viewport:focus { outline: none; }
+.board-viewport[data-brush="flame"] { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Ctext y='24' font-size='24'%3E🔥%3C/text%3E%3C/svg%3E") 6 24, crosshair; }
+.board-viewport[data-brush="extinguish"] { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Ctext y='24' font-size='24'%3E💧%3C/text%3E%3C/svg%3E") 8 24, cell; }
+.board-surface { position: absolute; left: 0; top: 0; transform-origin: 0 0; box-shadow: 0 15px 70px #000; }
+.board-surface.moving { will-change: transform; }
+.board-surface.zooming { transition: transform 0.12s ease-out; }
+.board-surface > img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; pointer-events: none; }
+#map-image { z-index: 0; }
+#map-overlay { z-index: 1; }
+#grid-canvas { z-index: 2; }
+.effects-layer { z-index: 3; }
+/* Above the grid, because you cannot see chalk lines in a black tunnel, and
+   above the effects, because a fire in a room nobody has reached should not
+   show. Below the tokens on purpose: painting over them would clip the heads
+   off standing minis and wash out the HP bars. A token nobody can see is not
+   drawn at all instead — see renderActors. */
+#fog-canvas { z-index: 4; }
+.tokens-layer { z-index: 5; }
+#grid-canvas, #fog-canvas, .effects-layer, .tokens-layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+#grid-canvas { pointer-events: none; }
+#fog-canvas { pointer-events: none; }
+.effects-layer { pointer-events: none; overflow: hidden; }
+.tokens-layer { overflow: visible; }
+/* Seen through a gap in the floor above — a storey away, not beside you.
+   Held back rather than hidden: you still need to point at them. */
+.token.storey-below { opacity: .62; filter: saturate(.7) brightness(.88); }
+.token.storey-below:hover, .token.storey-below.selected { opacity: 1; filter: none; }
+.actor-selection-box { position: absolute; z-index: 6; border: 2px solid var(--gold); background: rgb(from var(--gold) r g b / 0.17); box-shadow: inset 0 0 14px rgb(from var(--gold) r g b / 0.33), 0 0 8px #000b; pointer-events: none; }
+.actor-tooltip { position: absolute; z-index: 12; width: max-content; max-width: 260px; padding: 8px 10px; border: 1px solid var(--gold); border-radius: 3px; background: rgb(from var(--inset) r g b / 0.95); color: var(--paper); box-shadow: 0 8px 24px #000c; font-size: 12px; line-height: 1.35; pointer-events: none; }
+.actor-tooltip strong { display: block; color: var(--gold); font-size: 13px; }
+.actor-tooltip span { color: var(--text-soft); }
+.empty-board { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; color: var(--muted); }
+.brand-mark { width: 76px; height: 76px; display: grid; place-items: center; border: 3px double var(--edge); transform: rotate(45deg); color: var(--brass); font: 700 42px var(--font-display); }
+.brand-mark::first-letter { transform: rotate(-45deg); }
+.empty-board p { margin-top: 30px; font-style: italic; }
+
+.token {
+  position: absolute; display: grid; place-items: center; border-radius: 50%;
+  border: 3px solid var(--gold); color: white; font-family: var(--font-label);
+  font-weight: 700; text-shadow: 1px 1px 2px #000; cursor: move; user-select: none;
+  box-shadow: 0 4px 12px #000b, inset 0 0 0 2px #0005;
+  transform: translate(-50%, -50%);
+}
+.token.actor-sprite { border: 0; border-radius: 0; background: none !important; box-shadow: none; overflow: visible; }
+/* The keyline is four stacked drop-shadows, and stacking compounds them — each one
+   shadows the previous result — so the offset stays sub-pixel. app.js scales
+   --outline with the token so it reads as a hairline at every grid size, and sets
+   --outline-color from the actor's primary affiliation (bone white when unknown). */
+.token { --outline-color: #f4efe3; }
+.actor-sprite img {
+  --outline: .5px;
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; object-fit: fill; pointer-events: none;
+  filter:
+    drop-shadow(var(--outline) 0 0 var(--outline-color)) drop-shadow(calc(var(--outline) * -1) 0 0 var(--outline-color))
+    drop-shadow(0 var(--outline) 0 var(--outline-color)) drop-shadow(0 calc(var(--outline) * -1) 0 var(--outline-color))
+    drop-shadow(0 3px 3.5px #000c);
+}
+/* A standing mini is anchored at its base: the feet sit at the front edge of the
+   occupied square and the body rises out of it, the way a figure does on a real
+   board. app.js sizes the art and sets --lift; the token element itself stays
+   exactly one footprint, so the click target stays on the square even though the
+   art overhangs it. Depth comes from a per-token z-index, also set in app.js. */
+.actor-sprite.standing img { top: auto; bottom: var(--lift, 0px); translate: -50% 0; }
+/* Gear is a quarter of a square, lost among boots on a brown floor. A soft tint
+   does not survive that — it is the same value as the dirt, so the eye skips it.
+   What reads is a hard bright edge and MOVEMENT: a shaft of light standing over
+   the item, pulsing slowly, the way loot beams do. Drawn behind the art, so the
+   thing itself is never washed out. */
+@keyframes loot-pulse {
+  0%, 100% { opacity: .45; transform: translate(-50%, 0) scaleY(.92); }
+  50%      { opacity: .95; transform: translate(-50%, 0) scaleY(1.06); }
+}
+@keyframes loot-glint {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+.token-glow {
+  --loot: var(--rarity-common);
+  position: absolute; z-index: -1; pointer-events: none;
+  left: 50%; bottom: var(--lift, 0px); width: 42%; height: 300%;
+  transform-origin: 50% 100%;
+  background: linear-gradient(to top,
+    rgb(from var(--loot) r g b / 0.85) 0%,
+    rgb(from var(--loot) r g b / 0.30) 34%,
+    transparent 88%);
+  animation: loot-pulse 1.9s ease-in-out infinite;
+}
+/* Rarity is the only thing that decides the colour, and the theme is the only
+   thing that decides what that colour is. */
+.token[data-rarity="uncommon"] .token-glow  { --loot: var(--rarity-uncommon); }
+.token[data-rarity="rare"] .token-glow      { --loot: var(--rarity-rare); }
+.token[data-rarity="legendary"] .token-glow { --loot: var(--rarity-legendary); }
+/* The better the find, the taller and steadier the shaft. */
+.token[data-rarity="rare"] .token-glow      { width: 48%; height: 380%; }
+.token[data-rarity="legendary"] .token-glow { width: 54%; height: 460%; animation-duration: 2.6s; }
+/* The bright foot of the beam, which is what actually locates the item. */
+.token-glow::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; translate: -50% 50%;
+  width: 190%; aspect-ratio: 3.4; border-radius: 50%;
+  background: radial-gradient(closest-side, #fff8e2 0%, rgb(from var(--loot) r g b / 0.75) 45%, transparent 75%);
+  animation: loot-glint 1.9s ease-in-out infinite;
+}
+
+/* Enchantment, on top of rarity: motes rising out of the light in the rarity's
+   own colour. Three of them on one element — the dot itself and its two
+   pseudo-elements — offset in time so they never blink together. */
+@keyframes loot-mote {
+  0%   { opacity: 0;   transform: translate(-50%, 0) scale(.5); }
+  25%  { opacity: 1;   transform: translate(-50%, -140%) scale(1); }
+  70%  { opacity: .35; transform: translate(-50%, -300%) scale(.7); }
+  100% { opacity: 0;   transform: translate(-50%, -420%) scale(.4); }
+}
+.token.enchanted .token-glow > i,
+.token.enchanted .token-glow > i::before,
+.token.enchanted .token-glow > i::after {
+  position: absolute; bottom: 0; width: 13%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(closest-side, #fff 0%, var(--loot) 55%, transparent 72%);
+  animation: loot-mote 2.8s ease-out infinite;
+}
+.token.enchanted .token-glow > i { left: 50%; }
+.token.enchanted .token-glow > i::before { content: ""; left: -110%; width: 100%; animation-delay: .9s; }
+.token.enchanted .token-glow > i::after  { content: ""; left: 210%;  width: 100%; animation-delay: 1.8s; }
+@media (prefers-reduced-motion: reduce) {
+  .token.enchanted .token-glow > i,
+  .token.enchanted .token-glow > i::before,
+  .token.enchanted .token-glow > i::after { animation: none; opacity: .8; transform: translate(-50%, -160%); }
+}
+.token.destroyed .token-glow { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .token-glow, .token-glow::after { animation: none; opacity: .8; }
+}
+
+/* Hold Alt: every item names itself, whatever the zoom. Diablo's answer, and the
+   only one that scales to a floor covered in loot. */
+.naming-loot .token.loot .token-label {
+  display: block; z-index: 6;
+  background: rgb(from var(--ink) r g b / 0.94);
+  border: 1px solid var(--gold); color: var(--gold);
+  box-shadow: 0 2px 8px #000b;
+}
+.naming-loot .token.loot .token-glow { animation-duration: .9s; }
+
+/* Whatever is being dragged rides above the whole board until it lands. */
+.token.dragging { z-index: 9000 !important; }
+
+/* A named allegiance earns a slightly stronger line plus a faint halo of its own
+   colour, so red reads as red across a crowded barroom rather than as a hairline. */
+.actor-sprite.allied img {
+  filter:
+    drop-shadow(var(--outline) 0 0 var(--outline-color)) drop-shadow(calc(var(--outline) * -1) 0 0 var(--outline-color))
+    drop-shadow(0 var(--outline) 0 var(--outline-color)) drop-shadow(0 calc(var(--outline) * -1) 0 var(--outline-color))
+    drop-shadow(0 0 3px var(--outline-color)) drop-shadow(0 3px 3.5px #000c);
+}
+/* Plain circular tokens (no sprite art) wear the colour on their ring. */
+.token:not(.actor-sprite) { border-color: var(--outline-color); }
+.token:hover::before { content: ""; position: absolute; inset: -4px; border: 1px dashed #fff8; border-radius: 6px; box-shadow: 0 0 8px #fff3; pointer-events: none; }
+.actor-sprite.selected::after, .token.selected::after {
+  content: ""; position: absolute; inset: -2px; border: 2px solid var(--gold); border-radius: 5px; box-shadow: 0 0 8px rgb(from var(--gold) r g b / 0.60); pointer-events: none;
+}
+/* A mini is left alone: no keyline, which around a painted figure only makes it
+   look pasted onto the map, and no ring around the square, which reads as
+   picking the square rather than the piece standing in it. All it wears at rest
+   is the contact shadow that sits it on the boards. The cursor warms it, and
+   picking it lights its edge gold — the figure itself is the highlight, so
+   nothing is ever drawn across the art. */
+.token.standing:hover::before, .token.standing.selected::after { content: none; }
+.actor-sprite.standing img, .actor-sprite.standing.allied img { filter: drop-shadow(0 3px 4px #000c); }
+.actor-sprite.standing:hover img {
+  filter: drop-shadow(0 0 7px rgb(from var(--paper) r g b / 0.45)) drop-shadow(0 3px 4px #000c);
+}
+.actor-sprite.standing.selected img {
+  filter:
+    drop-shadow(var(--outline) 0 0 var(--gold)) drop-shadow(calc(var(--outline) * -1) 0 0 var(--gold))
+    drop-shadow(0 var(--outline) 0 var(--gold)) drop-shadow(0 calc(var(--outline) * -1) 0 var(--gold))
+    drop-shadow(0 0 8px rgb(from var(--gold) r g b / 0.85)) drop-shadow(0 3px 4px #000c);
+}
+.actor-sprite.destroyed { filter: grayscale(1); opacity: .58; }
+
+/* Hold Z: every actor on the board outlines itself in the theme's gold and
+   flashes. Alt answers "which speck is the musket" by naming the loot; this
+   answers "what is actually on this floor", which on a busy map with lamps,
+   shadow and a painted background is a different question — a token can be lost
+   against the art whether it is a person, a horse or a knife.
+
+   --gold rather than a literal yellow, because every theme restates it — the
+   default table is warm gold, the frontier-index blue theme is cyan — and the
+   highlight should read as this board's own accent wherever it lands.
+
+   This block sits last on purpose. `.actor-sprite.standing.allied img` has the
+   same specificity as the spotlight's own rule, so whichever is written later
+   wins — and with the spotlight written first, every token with an affiliation
+   stayed dark while the three unaffiliated ones lit. Order was the whole bug.
+
+   Two token shapes, so two treatments. A sprite is cut art with no box to put a
+   border on, and its keyline is already four stacked drop-shadows; a plain token
+   is a coloured square that can simply take one. Both key off --lit, which is
+   the only thing the animation actually moves. */
+.spotlighting .token {
+  --lit: 1;
+  animation: spotlight-flash 1s ease-in-out infinite;
+}
+@keyframes spotlight-flash {
+  0%, 100% { --lit: .35; }
+  50%      { --lit: 1; }
+}
+/* Custom properties do not interpolate unless they are registered, so the
+   keyframes above step rather than sweep in browsers without @property. This
+   registration is what makes it a pulse instead of a blink; where it is
+   unsupported the effect degrades to the same two states, which is still the
+   flash that was asked for. */
+@property --lit {
+  syntax: "<number>"; inherits: true; initial-value: 0;
+}
+
+/* Cut art: extend the existing keyline idiom rather than inventing a second one,
+   so a spotlit token and a selected one look like the same board. */
+.spotlighting .token.actor-sprite:not(.selected) img {
+  filter:
+    drop-shadow(var(--outline) 0 0 var(--gold)) drop-shadow(calc(var(--outline) * -1) 0 0 var(--gold))
+    drop-shadow(0 var(--outline) 0 var(--gold)) drop-shadow(0 calc(var(--outline) * -1) 0 var(--gold))
+    drop-shadow(0 0 calc(9px * var(--lit, 1)) rgb(from var(--gold) r g b / calc(0.9 * var(--lit, 1))))
+    drop-shadow(0 3px 4px #000c);
+}
+/* A plain token has a box, so it gets a ring. Inset as well as outer, or a small
+   quarter-square item is a gold dot rather than an outlined thing. */
+.spotlighting .token:not(.actor-sprite):not(.selected) {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 2px rgb(from var(--gold) r g b / calc(0.95 * var(--lit, 1))),
+    0 0 calc(10px * var(--lit, 1)) rgb(from var(--gold) r g b / calc(0.85 * var(--lit, 1))),
+    inset 0 0 0 1px rgb(from var(--gold) r g b / calc(0.7 * var(--lit, 1)));
+}
+/* Selection still outranks the spotlight — you have to be able to see what you
+   have hold of while the floor is lit. */
+.spotlighting .token.selected { animation: none; --lit: 1; }
+/* A flash is the one effect that must not be forced on someone who asked for
+   stillness. The outline stays; only the pulsing stops. */
+@media (prefers-reduced-motion: reduce) {
+  .spotlighting .token { animation: none; --lit: 1; }
+}
+
+.actor-sprite .token-label { top: calc(100% + 12px); }
+.hp-bar { --hp-height: 6px; --hp-edge: 1px; position: absolute; z-index: 3; left: 6%; right: 6%; bottom: calc(var(--hp-height) * -1.2); height: var(--hp-height); overflow: hidden; background: #641f1b; border: var(--hp-edge) solid rgb(from var(--paper) r g b / 0.85); border-radius: 5px; box-shadow: 0 1px 3px #000c, inset 0 0 2px #000; }
+.hp-bar > span { display: block; height: 100%; background: linear-gradient(#b9e77c, #4e942f); box-shadow: inset 0 0 2px #fff9; transition: width .18s ease; }
+/* Environment effects — ONE svg per patch: pulsing interior, flaming outer
+   edge, and a handful of drifting embers. No per-cell nodes, no per-cell anims. */
+.fx-region, .fx-preview { position: absolute; overflow: visible; pointer-events: none; }
+.fx-fill { animation: fx-pulse 3.4s ease-in-out infinite; }
+.fx-edge { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.fx-ember { animation: fx-rise 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+
+.fx-region.fire .fx-fill { fill: rgba(255,120,30,.30); }
+.fx-region.fire .fx-edge { stroke: #ffd24a; stroke-width: 5; filter: drop-shadow(0 0 4px #ff8a1e) drop-shadow(0 0 10px #ff5a10); animation: fx-flicker 1.7s ease-in-out infinite; }
+.fx-region.fire .fx-ember { fill: #ffdf8a; }
+.fx-region.smoke .fx-fill { fill: rgba(74,70,64,.42); animation-duration: 5.2s; }
+.fx-region.smoke .fx-edge { stroke: rgba(150,146,140,.5); stroke-width: 7; filter: blur(2px); animation: fx-flicker 3.6s ease-in-out infinite; }
+.fx-region.smoke .fx-ember { fill: #d8d4cd; }
+.fx-region.fx-hover .fx-edge { stroke: #fff2a8; filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 12px #ff8a1e); }
+.fx-region.fx-hover .fx-fill { opacity: .85; }
+
+.fx-preview.fire path { fill: rgba(255,150,40,.12); stroke: #ffd24a; }
+.fx-preview.smoke path { fill: rgba(120,116,110,.14); stroke: rgba(180,176,170,.85); }
+.fx-preview path { stroke-width: 3; stroke-dasharray: 7 5; }
+
+/* Gentle breathing interior — small amplitude reads as glow, not a strobe. */
+@keyframes fx-pulse { 0%, 100% { opacity: .6; } 50% { opacity: .92; } }
+/* Irregular, low-amplitude flicker instead of an on/off pulse. */
+@keyframes fx-flicker { 0%, 100% { opacity: .9; } 18% { opacity: 1; } 34% { opacity: .8; } 52% { opacity: .98; } 70% { opacity: .84; } 86% { opacity: .95; } }
+/* Particles rise on a sine/cosine sway, fading in then out. Each carries its own
+   --rise / --amp / --peak and a negative delay so they never march in lockstep. */
+@keyframes fx-rise {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  15%  { opacity: var(--peak, .8); }
+  20%  { transform: translate(calc(var(--amp, 6px) *  0.95), calc(var(--rise, 30px) * -0.2)); }
+  40%  { transform: translate(calc(var(--amp, 6px) *  0.59), calc(var(--rise, 30px) * -0.4)); }
+  50%  { transform: translate(0, calc(var(--rise, 30px) * -0.5)); }
+  60%  { transform: translate(calc(var(--amp, 6px) * -0.59), calc(var(--rise, 30px) * -0.6)); }
+  80%  { opacity: var(--peak, .8); transform: translate(calc(var(--amp, 6px) * -0.95), calc(var(--rise, 30px) * -0.8)); }
+  100% { opacity: 0; transform: translate(0, calc(var(--rise, 30px) * -1)); }
+}
+.token-label { position: absolute; top: calc(100% + 12px); white-space: nowrap; padding: 2px 5px; border-radius: 2px; background: rgb(from var(--ink) r g b / 0.87); color: var(--paper); font-size: 11px; font-weight: 400; }
+.token.pending { opacity: .7; filter: saturate(.5); }
+.movement-hint { position: absolute; z-index: 8; left: 14px; bottom: 12px; padding: 5px 9px; border: 1px solid var(--edge); background: rgb(from var(--ink) r g b / 0.87); color: var(--text-soft); font: 11px var(--font-label); pointer-events: none; }
+.zoom-readout { position: absolute; right: 14px; bottom: 12px; padding: 4px 8px; border: 1px solid var(--edge); background: rgb(from var(--ink) r g b / 0.80); color: var(--text-soft); font: 12px var(--font-label); }
+
+.help-dialog { width: min(560px, calc(100% - 30px)); color: var(--paper); background: var(--panel); border: 3px double var(--brass); box-shadow: 0 20px 80px #000; padding: 28px; }
+.help-dialog::backdrop { background: #090603d9; backdrop-filter: blur(3px); }
+.help-dialog h2 { font-size: 28px; }
+.help-dialog li, .help-dialog p { line-height: 1.5; }
+/* Same furniture as the help dialog, narrower — it asks two questions. */
+.exit-dialog { width: min(440px, calc(100% - 30px)); color: var(--paper); background: var(--panel); border: 3px double var(--brass); box-shadow: 0 20px 80px #000; padding: 26px; }
+.exit-dialog::backdrop { background: #090603d9; backdrop-filter: blur(3px); }
+.exit-dialog h2 { margin: 0 0 10px; font-size: 24px; }
+.exit-dialog p { line-height: 1.5; }
+.exit-dialog .field { display: block; margin-top: 16px; }
+.exit-dialog .field span { display: block; margin-bottom: 5px; color: var(--text-soft); font-size: 13px; }
+.exit-dialog .field strong { color: var(--gold); }
+.exit-dialog input { width: 100%; padding: 9px 10px; color: var(--paper); background: var(--inset); border: 1px solid var(--edge); }
+.exit-dialog input:focus { border-color: var(--brass); outline: none; }
+.exit-dialog .button { margin-top: 20px; }
+.dialog-close { position: absolute; top: 8px; right: 12px; border: 0; background: none; color: var(--brass); font-size: 28px; cursor: pointer; }
+.actor-sheet {
+  /* 68px is the title bar's full height, border included — start a pixel higher
+     and the sheet paints over that bar's bottom rule, which is what made its own
+     top edge look missing. It stops there rather than running to the top of the
+     window on purpose: the bar is the one thing always about the whole table
+     rather than one piece on it, so it stays above the sheet and reachable. */
+  position: fixed; z-index: 90; top: calc(68px + var(--preview-bar, 0px)); right: 0; bottom: 0; width: min(520px, 94vw);
+  display: flex; flex-direction: column; overflow: hidden; color: var(--paper);
+  background: var(--panel); border-left: 3px solid var(--primary); box-shadow: -18px 0 48px #0009;
+  transform: translateX(calc(100% + 24px)); visibility: hidden;
+  transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .3s;
+}
+.actor-sheet.open { transform: translateX(0); visibility: visible; transition-delay: 0s; }
+
+/* Encounter and place browsers. Same slide-in idiom as the actor sheet,
+   entering from the sidebar side because that is what opened them. */
+.browser-panel {
+  position: fixed; z-index: 88; top: calc(68px + var(--preview-bar, 0px)); left: 0; bottom: 0; width: min(620px, 96vw);
+  display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 22px;
+  color: var(--paper); background: var(--panel); border-right: 3px solid var(--brass); box-shadow: 18px 0 48px #0009;
+  transform: translateX(calc(-100% - 24px)); visibility: hidden;
+  transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .3s;
+}
+.browser-panel.open { transform: translateX(0); visibility: visible; transition-delay: 0s; }
+.browser-heading { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.browser-heading h2 { margin: 0; font-size: 26px; }
+.browser-heading .dialog-close { position: static; }
+.browser-lede { margin: 0; color: var(--text-soft); font-size: 13px; line-height: 1.5; }
+.encounter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.encounter-card {
+  display: flex; flex-direction: column; gap: 7px; padding: 14px;
+  border: 1px solid var(--edge); background: rgb(from var(--inset) r g b / 0.67); text-align: left;
+}
+.encounter-card.active { border-color: var(--brass); box-shadow: inset 3px 0 var(--brass); }
+.encounter-card h3 { margin: 0; color: var(--gold); font-size: 16px; line-height: 1.2; }
+.encounter-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.encounter-card-where { margin: 0; color: var(--text-soft); font-size: 12px; }
+.encounter-card-counts { margin: 0; color: var(--muted); font-size: 11px; }
+.encounter-card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+/* The pack's prose block on the actor sheet. */
+.sheet-dossier h4 { margin: 12px 0 3px; color: var(--brass); font: 11px var(--font-label); text-transform: uppercase; letter-spacing: 1.4px; }
+.sheet-dossier h4:first-child { margin-top: 0; }
+.sheet-dossier p { margin: 0 0 7px; line-height: 1.5; }
+
+/* Read-only place inspector. Content is authored with the DND CLI; this
+   panel exists so the DM can see what a place is without leaving the table. */
+.browser-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.browser-footnote { margin: 0; padding-top: 14px; border-top: 1px solid var(--edge); color: var(--muted); font-size: 12px; line-height: 1.5; }
+.browser-footnote code { color: var(--brass); font-size: 11px; }
+.sheet-close { position: absolute; z-index: 2; top: 10px; right: 13px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #2b2724cc; color: #fff; font-size: 25px; line-height: 1; cursor: pointer; }
+.sheet-hero { min-height: 124px; display: flex; align-items: center; gap: 17px; padding: 18px 54px 18px 20px; color: #fff; background: linear-gradient(125deg, var(--panel) 0 62%, var(--panel-light) 100%); border-bottom: 3px solid var(--primary); }
+.sheet-hero h2 { margin: 2px 0 4px; color: #fff; font: 700 clamp(25px, 4vw, 34px)/1.05 var(--font-body); }
+.sheet-kicker { margin: 0; color: var(--primary-bright); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.sheet-meta { margin: 0; color: var(--text-soft); font-size: 13px; }
+.sheet-scroll { flex: 1; overflow-y: auto; padding: 18px 20px 28px; }
+/* Flex rather than a fixed set of columns: an actor is shown only the tiles it
+   has an answer for, so the row has to close up cleanly around whichever ones
+   are left — five for a gunhand, one for a bottle of coal oil. */
+.sheet-vitals { display: flex; flex-wrap: wrap; gap: 8px; }
+.sheet-vitals > div { flex: 1 1 0; min-width: 76px; min-height: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 5px; border: 1px solid var(--edge-soft); border-radius: 4px; background: var(--panel); box-shadow: inset 0 0 12px #0006; text-align: center; }
+.sheet-vitals > div[hidden] { display: none; }
+.sheet-vitals > .sheet-hp { flex-grow: 1.6; }
+.sheet-vitals span { color: var(--brass); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.sheet-vitals strong { color: var(--paper); font: 700 20px var(--font-body); }
+.sheet-vitals .sheet-hp { position: relative; border-top: 4px solid var(--primary); }
+.hp-stepper { display: flex; gap: 5px; margin-top: 5px; }
+.hp-stepper button { width: 27px; height: 24px; border: 1px solid #a69a8d; border-radius: 3px; background: #f6f3ed; color: #322a26; font-size: 18px; line-height: 1; cursor: pointer; }
+.hp-stepper button:disabled { opacity: .35; cursor: not-allowed; }
+.sheet-access { margin: 7px 2px 0; color: var(--muted); font-size: 10px; }
+.sheet-description { margin: 16px 0; color: var(--text-soft); font: italic 14px/1.5 var(--font-body); }
+.sheet-section { margin-top: 18px; }
+.sheet-section h3 { margin: 0; padding: 7px 10px; color: var(--paper); background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary), var(--primary-bright) 40%)); font: 700 13px/1.1 Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.sheet-entries { margin: 0; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); }
+.sheet-entries:empty { display: none; }
+.sheet-entries dt { padding: 10px 11px 2px; color: var(--gold); font-weight: 800; text-transform: capitalize; }
+.sheet-entries dd { margin: 0; padding: 0 11px 10px; color: var(--text-soft); font-size: 12px; line-height: 1.45; border-bottom: 1px solid var(--edge-soft); }
+.sheet-entries dd:last-child { border-bottom: 0; }
+.sheet-keyboard { margin: 20px 0 0; color: var(--muted); font-size: 10px; text-align: center; }
+
+/* Rename in place: the sheet title is the affordance, so it has to look typeable. */
+.sheet-hero h2.editable { padding: 1px 7px; margin-left: -8px; border: 1px dashed transparent; border-radius: 4px; cursor: text; }
+.sheet-hero h2.editable:hover { border-color: rgb(from var(--gold) r g b / 0.5); background: #0003; }
+.sheet-hero h2.editable:focus { outline: none; border-color: var(--gold); border-style: solid; background: #0005; }
+.sheet-hero h2.editable::after { content: "✎"; margin-left: 9px; color: var(--gold); font-size: 15px; opacity: 0; transition: opacity .15s ease; }
+.sheet-hero h2.editable:hover::after { opacity: .75; }
+.sheet-hero h2.editable:focus::after { opacity: 0; }
+.sheet-headline { min-width: 0; }
+
+/* Portrait opens full size — the token art is small and the table wants a look. */
+.portrait-button { flex: 0 0 88px; padding: 0; border: 0; background: none; border-radius: 50%; cursor: zoom-in; }
+.portrait-button img { display: block; width: 88px; height: 88px; object-fit: cover; border: 3px solid var(--paper); border-radius: 50%; background: #6d5a4d; box-shadow: 0 3px 13px #0009; transition: transform .18s ease, border-color .18s ease; }
+.portrait-button:hover img, .portrait-button:focus-visible img { transform: scale(1.05); border-color: var(--gold); }
+.portrait-dialog { max-width: min(880px, 92vw); max-height: 92vh; padding: 14px; border: 3px double var(--brass); background: var(--panel); box-shadow: 0 24px 90px #000; }
+.portrait-dialog::backdrop { background: #06040292; backdrop-filter: blur(4px); }
+.portrait-dialog img { display: block; max-width: 100%; max-height: calc(92vh - 74px); margin: 0 auto; object-fit: contain; border-radius: 3px; }
+.portrait-caption { margin: 11px 0 2px; color: var(--gold); font-family: var(--font-display); font-size: 19px; text-align: center; }
+/* The other pictures of this actor. Only shown when there is more than one, so a
+   pack with a single portrait opens exactly as it always did. */
+.portrait-strip { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+.portrait-thumb {
+  width: 62px; height: 62px; padding: 3px; cursor: pointer; border: 1px solid var(--edge-soft); border-radius: 3px;
+  background: var(--inset); opacity: .62; transition: opacity .12s, border-color .12s;
+}
+.portrait-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.portrait-thumb:hover { opacity: 1; border-color: var(--brass); }
+.portrait-thumb.current { opacity: 1; border-color: var(--gold); box-shadow: 0 0 7px rgb(from var(--gold) r g b / 0.45); }
+.portrait-thumb:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* The strip must never push the picture off screen — but a lone portrait keeps
+   the full height it always had. */
+.portrait-dialog:has(#portrait-strip:not([hidden])) #portrait-large { max-height: calc(92vh - 170px); }
+/* showModal() autofocuses the close button; keep its ring in the table's palette. */
+.portrait-dialog .dialog-close:focus-visible, .help-dialog .dialog-close:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
+
+/* Hit points are the DM's ledger; this toggles the bar over the token. */
+.hp-visibility { margin-top: 6px; padding: 2px 8px; border: 1px solid var(--edge-soft); border-radius: 999px; background: rgb(from var(--gold) r g b / 0.15); color: var(--gold); font: 700 9px var(--font-label); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.hp-visibility.off { background: #0004; color: var(--muted); }
+
+/* An actor is a growing list of facts, each one flagged by who knows it. */
+.sheet-facts-section .fact-list { margin: 0; padding: 0; list-style: none; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); }
+.fact { display: flex; align-items: flex-start; gap: 10px; padding: 9px 11px; border-bottom: 1px solid var(--edge-soft); border-left: 3px solid transparent; }
+.fact:last-child { border-bottom: 0; }
+.fact-public { border-left-color: var(--brass); }
+.fact-staged { border-left-color: #b1791f; background: rgb(from var(--ink) r g b / 0.30); }
+.fact-secret { border-left-color: var(--primary-bright); background: rgb(from var(--ink) r g b / 0.45); }
+.fact-text { flex: 1; margin: 0; color: var(--text-soft); font-size: 13px; line-height: 1.45; }
+.fact-staged .fact-text, .fact-secret .fact-text { font-style: italic; }
+.fact-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 3px; max-width: 46%; }
+.fact-badge { width: 100%; color: var(--muted); font: 700 8px var(--font-label); letter-spacing: .07em; text-align: right; text-transform: uppercase; }
+/* The DC the author set, beside a held-back fact. Loud enough to read at a
+   glance mid-session, since it answers "what do I ask them to roll?". */
+.fact-check { padding: 1px 6px; border: 1px solid var(--brass); border-radius: 9px; color: var(--gold); font: 700 9px var(--font-label); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.fact-visibility { padding: 2px 6px; border: 1px solid var(--edge-soft); border-radius: 3px; background: transparent; color: var(--muted); font: 700 9px var(--font-label); text-transform: uppercase; cursor: pointer; }
+.fact-visibility:hover { border-color: var(--brass); color: var(--gold); }
+.fact-visibility.active { border-color: var(--brass); background: var(--leather); color: var(--gold); }
+.fact-remove { padding: 0 4px; border: 0; background: none; color: var(--primary-bright); font-size: 15px; line-height: 1; cursor: pointer; }
+.fact-empty { margin: 0; padding: 12px 11px; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); color: var(--muted); font: italic 12px/1.4 var(--font-body); }
+.fact-composer { padding: 11px; border: 1px solid var(--edge-soft); border-top: 0; background: rgb(from var(--inset) r g b / 0.55); }
+.fact-composer .field span { color: var(--brass); }
+.fact-composer-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 8px; }
+.fact-composer-actions .button { padding: 6px 4px; font-size: 11px; }
+.fact-composer-actions .button[data-visibility="public"] { border-color: var(--brass); color: var(--gold); }
+.tooltip-fact { margin-top: 4px; padding-left: 6px; border-left: 2px solid var(--brass); }
+.tooltip-fact.fact-staged { border-left-color: #b1791f; font-style: italic; }
+.tooltip-fact.fact-secret { border-left-color: var(--primary-bright); font-style: italic; }
+
+/* Affiliations — the outline palette, as an editor for the host and a legend for
+   everyone else. */
+.affiliation-list { display: grid; gap: 6px; margin-top: 10px; }
+.affiliation-row {
+  display: grid; grid-template-columns: 15px minmax(0, 1fr) auto auto; align-items: center; gap: 8px;
+  padding: 6px 8px; background: rgb(from var(--inset) r g b / 0.60); border: 1px solid var(--edge-soft);
+}
+.affiliation-row.legend-only { grid-template-columns: 15px minmax(0, 1fr) auto; }
+.affiliation-swatch { width: 15px; height: 15px; border-radius: 50%; border: 1px solid #0007; box-shadow: 0 0 5px rgb(from var(--paper) r g b / 0.25); }
+.affiliation-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-soft); font-size: 13px; }
+input.affiliation-label { padding: 3px 5px; border: 1px solid transparent; background: transparent; }
+input.affiliation-label:hover { border-color: var(--edge-soft); }
+input.affiliation-label:focus { border-color: var(--brass); background: var(--inset); }
+.affiliation-count { color: var(--muted); font: 11px var(--font-label); }
+.affiliation-palette { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
+.palette-swatch { width: 17px; height: 17px; padding: 0; border: 1px solid #0007; border-radius: 50%; cursor: pointer; }
+.palette-swatch:hover { transform: scale(1.16); }
+.palette-swatch.active { border: 2px solid var(--paper); box-shadow: 0 0 0 1px #000, 0 0 6px currentColor; }
+.affiliation-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; margin-top: 10px; }
+
+/* The sheet says the allegiance in words; the board says it in colour. */
+.sheet-affiliation { margin: 12px 0 0; }
+.affiliation-chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 7px; border: 1px solid rgb(from var(--chip, #f4efe3) r g b / 0.55); border-radius: 999px; background: rgb(from var(--chip, #f4efe3) r g b / 0.14); }
+.affiliation-chip i { width: 11px; height: 11px; border-radius: 50%; background: var(--chip, #f4efe3); box-shadow: 0 0 6px var(--chip, #f4efe3); }
+.affiliation-chip b { color: var(--paper); font: 700 11px var(--font-label); letter-spacing: .07em; text-transform: uppercase; }
+.affiliation-chip.unknown b { color: var(--muted); font-weight: 400; }
+.affiliation-chip.unknown i { box-shadow: none; opacity: .7; }
+.tooltip-affiliation { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; color: var(--text-soft); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.tooltip-affiliation::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--chip, #f4efe3); }
+
+/* The library is one pool of actors, filed as party / NPCs / items. */
+.asset-group-heading { grid-column: 1 / -1; margin: 9px 0 1px; color: var(--brass); font: 700 9px var(--font-label); letter-spacing: .1em; text-transform: uppercase; }
+.asset-group-heading:first-child { margin-top: 2px; }
+.asset-card.group-party { border-left: 3px solid var(--gold); }
+.roster-badge { color: var(--gold); font: 700 8px var(--font-label); letter-spacing: .07em; text-transform: uppercase; }
+.roster-badge.absent { color: var(--muted); }
+.token-row.mine { border-color: rgb(from var(--gold) r g b / 0.55); }
+/* A character in the campaign who is not on the board yet. Present in the list —
+   you have to be able to see who is missing — but plainly not in the scene. */
+.token-row.absent { opacity: .62; border-style: dashed; }
+.token-row.absent:hover { opacity: 1; }
+.token-row { cursor: pointer; }
+.token-face { width: 22px; height: 22px; flex: 0 0 auto; object-fit: cover; border-radius: 50%; border: 1px solid var(--edge); background: var(--ink); }
+
+/* A section nested inside another — Places & maps, Board geometry — indented
+   just enough to read as belonging to the one above it. */
+.sub-section { margin: 12px 0 0; padding-left: 10px; border-left: 1px solid var(--edge-soft); }
+.sub-section > summary { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; list-style: none; color: var(--text-soft); }
+.sub-section > summary::-webkit-details-marker { display: none; }
+.sub-section > summary::before { content: "›"; color: var(--brass); transition: transform .15s ease; }
+.sub-section[open] > summary::before { transform: rotate(90deg); }
+.sub-section > summary:hover { color: var(--gold); }
+.sub-section .nav-title { font-size: 11px; }
+.dice-panel { position: fixed; z-index: 95; right: 18px; bottom: 18px; width: min(470px, calc(100vw - 36px)); max-height: calc(100vh - 92px); overflow-y: auto; padding: 14px; color: var(--paper); background: rgb(from var(--panel) r g b / 0.93); border: 2px solid var(--edge); border-radius: 6px; box-shadow: 0 18px 60px #000d; transform: translateY(calc(100% + 30px)); visibility: hidden; transition: transform .24s ease, visibility 0s linear .24s; }
+.dice-panel.open { transform: translateY(0); visibility: visible; transition-delay: 0s; }
+.dice-panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.dice-panel-heading span { color: var(--brass); font: 10px var(--font-label); letter-spacing: .1em; text-transform: uppercase; }
+.dice-panel-heading h2 { font-size: 21px; }
+.dice-panel-heading button { border: 0; background: none; color: var(--gold); font-size: 25px; cursor: pointer; }
+.board-dice-tray { position: relative; height: 190px; overflow: hidden; background: radial-gradient(circle at 50% 40%, #315844, #132c24 75%); border: 5px solid var(--leather); border-radius: 5px; box-shadow: inset 0 0 30px #000b; }
+.board-dice-tray canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.dice-stage { position: fixed; z-index: 300; inset: 0; pointer-events: none; }
+.dice-stage .board-dice-tray { height: 100%; width: 100%; background: transparent; border: 0; border-radius: 0; box-shadow: none; transition: opacity .5s ease; }
+.dice-stage .board-dice-tray.faded { opacity: 0; }
+.dice-stage .dice-readout { display: none; }
+.dice-stage .dice-loading { inset: auto 0 16px 0; place-items: end center; font-size: 12px; }
+
+/* Result popup — lower-right, appears after the dice settle, fades at 15s */
+.roll-announcement { display: none; }
+/* Rolls stack instead of replacing one another: a table rolling in quick
+   succession would otherwise lose the number it just made. The stack is pinned
+   at the bottom corner, so the newest card lands in place and the older ones
+   ride up off its top edge — see showRollResult() in board-dice.js, which eases
+   each card's own height out of the flow to make that a travel and not a jump. */
+.dice-stack { position: fixed; z-index: 305; right: 18px; bottom: 18px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; pointer-events: none; }
+.dice-result { max-width: min(340px, 70vw); display: flex; align-items: baseline; gap: 11px; padding: 11px 15px; color: var(--paper); background: rgb(from var(--ink) r g b / 0.95); border: 1px solid var(--brass); border-radius: 6px; box-shadow: 0 14px 40px #000b; opacity: 0; transform: translateY(10px); transition: opacity .35s ease, transform .35s ease, margin-top .35s ease; }
+.dice-result.show { opacity: 1; transform: translateY(0); }
+/* On the way out a card lifts clear of the stack rather than dropping through
+   the cards below it, which are newer and still being read. */
+.dice-result.leaving { opacity: 0; transform: translateY(-8px); }
+.dice-result strong { color: var(--gold); font: 700 30px/1 var(--font-body); }
+.dice-result span { color: var(--text-soft); font-size: 12px; line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) {
+  .dice-result { transition: opacity .35s ease; transform: none; }
+  .dice-result.show, .dice-result.leaving { transform: none; }
+}
+.dice-loading { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; color: var(--text-soft); font-style: italic; pointer-events: none; }
+.dice-loading.ready { display: none; }
+.dice-readout { position: absolute; z-index: 3; left: 12px; bottom: 10px; display: flex; align-items: baseline; gap: 8px; padding: 5px 9px; background: rgb(from var(--ink) r g b / 0.87); border: 1px solid var(--brass); border-radius: 3px; pointer-events: none; }
+.dice-readout strong { color: var(--gold); font: 700 28px/1 var(--font-body); }
+.dice-readout span { color: var(--text-soft); font-size: 11px; }
+.board-dice-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+.board-dice-bar button, .dice-quick button { position: relative; min-height: 38px; border: 1px solid var(--edge); border-radius: 3px; background: var(--panel-light); color: var(--gold); cursor: pointer; }
+.board-dice-bar button.selected { background: var(--primary); border-color: var(--primary-bright); }
+.board-dice-bar b { position: absolute; top: -6px; right: -4px; min-width: 18px; padding: 2px; border-radius: 9px; background: var(--gold); color: #21140e; font: 10px Arial, sans-serif; }
+.dice-actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.dice-modifier { display: grid; grid-template-columns: auto 28px 34px 28px; align-items: center; gap: 3px; margin-right: auto; }
+.dice-modifier span { color: var(--muted); font-size: 11px; }
+.dice-modifier button { height: 30px; border: 1px solid var(--edge); background: var(--panel-light); cursor: pointer; }
+.dice-modifier strong { color: var(--gold); text-align: center; }
+.dice-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 9px; }
+.roll-announcement { position: fixed; z-index: 110; top: 82px; left: 50%; min-width: 250px; max-width: min(480px, calc(100vw - 30px)); display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; padding: 10px 14px; color: var(--paper); background: rgb(from var(--panel) r g b / 0.93); border: 2px solid var(--brass); border-radius: 4px; box-shadow: 0 10px 36px #000c; transform: translate(-50%, -18px); opacity: 0; transition: .2s; }
+.roll-announcement.show { transform: translate(-50%, 0); opacity: 1; }
+.roll-announcement span { color: var(--text-soft); font-size: 12px; }
+.roll-announcement strong { grid-row: 1 / 3; grid-column: 2; align-self: center; color: var(--gold); font-size: 30px; }
+.roll-announcement small { color: var(--paper); }
+/* Advantage / disadvantage, said outright. The " adv" inside the formula was too
+   quiet to catch mid-fight, so both roll popups carry a coloured badge instead. */
+.roll-mode-tag { display: inline-block; margin-left: 8px; padding: 1px 7px 2px; border: 1px solid currentColor; border-radius: 999px; font: 700 10px/1.4 Arial, sans-serif; letter-spacing: .07em; text-transform: uppercase; }
+.roll-mode-tag[data-mode="advantage"] { color: var(--green); }
+.roll-mode-tag[data-mode="disadvantage"] { color: color-mix(in srgb, var(--red), var(--paper) 32%); }
+.toast { position: fixed; z-index: 100; left: 50%; bottom: 22px; translate: -50% 20px; opacity: 0; pointer-events: none; padding: 9px 15px; background: var(--gold); color: #21150e; border-radius: 3px; box-shadow: 0 8px 30px #000; transition: .2s; }
+.toast.show { opacity: 1; translate: -50% 0; }
+
+
+@media (max-width: 760px) {
+  :root { --sidebar: min(350px, 88vw); }
+  body.rail-only { --sidebar: 48px; }
+  .nav-rail { flex-basis: 48px; }
+  .campaign-name { font-size: 15px; }
+  /* The encounter's name is on the sheet of every actor in it and in the
+     Encounter settings panel; the chips and the menu are what you cannot get at
+     any other way, so they are what survives the narrow bar. */
+  .title-dash, .encounter-name { display: none; }
+  .seat-chip span { display: none; }
+  .seat-chip { max-width: none; padding: 6px; }
+  .who-button strong { display: none; }
+  .topbar { height: 56px; gap: 8px; padding: 0 8px; }
+  .top-actions { gap: 5px; }
+  .top-actions .button { padding: 6px 8px; font-size: 12px; }
+  .who-button { padding: 6px 8px; }
+  .actor-sheet { top: calc(56px + var(--preview-bar, 0px)); }
+  .preview-bar { padding: 0 10px; gap: 8px; }
+  .preview-note { display: none; }
+  .sheet-vitals > div { flex-basis: 40%; }
+  .sheet-vitals > .sheet-hp { flex-basis: 100%; }
+  .dice-panel { right: 8px; bottom: 8px; width: calc(100vw - 16px); }
+  .board-dice-bar { grid-template-columns: repeat(4, 1fr); }
+  .top-actions .quiet:first-child { display: none; }
+  .app-shell { height: calc(100% - 56px - var(--preview-bar, 0px)); grid-template-columns: var(--sidebar) calc(100vw - var(--sidebar)); }
+}
+
+/* --- Rollable sheet values: click a modifier or dice expression to roll --- */
+.actor-sheet .rollable {
+  font: inherit; cursor: pointer; color: var(--paper);
+  background: rgba(216, 180, 106, 0.16); border: 1px solid var(--brass);
+  border-radius: 6px; padding: 1px 9px; font-weight: 700; letter-spacing: 0.3px;
+  transition: background 0.12s, border-color 0.12s, transform 0.05s;
+}
+.actor-sheet .rollable::before { content: "🎲 "; font-weight: 400; opacity: 0.75; }
+.actor-sheet .rollable:hover { background: var(--primary); border-color: var(--primary-bright); color: #fff; }
+.actor-sheet .rollable:active { transform: translateY(1px); }
+
+/* An attack line reads as prose, with its two rolls — d20 to hit, then damage —
+   sitting under it as separate buttons. */
+.sheet-attack-text { margin: 0 0 7px; line-height: 1.45; }
+.roll-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.roll-combo { display: inline-flex; align-items: stretch; }
+.roll-combo .rollable { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.actor-sheet .roll-mode {
+  font: 700 11px/1 var(--font-label, inherit); cursor: pointer; color: var(--brass);
+  background: rgb(from var(--ink) r g b / 0.5); border: 1px solid var(--brass); border-left: 0;
+  padding: 0 7px; letter-spacing: 0.4px;
+}
+.actor-sheet .roll-mode[data-mode="disadvantage"] { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+.actor-sheet .roll-mode:hover { background: var(--primary); border-color: var(--primary-bright); color: #fff; }
+.actor-sheet .roll-mode:active { transform: translateY(1px); }
+
+/* --- Single-instance actors: card greys out once one is on the board --- */
+.asset-card.placed { position: relative; opacity: 0.6; filter: grayscale(0.4); cursor: pointer; }
+.asset-card.placed::after { content: "on board"; position: absolute; right: 6px; bottom: 4px; font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brass); }
+
+/* ==========================================================================
+   TABLE THEMES — real palettes, not filters.
+   Each theme redefines the design tokens from the top of this file: fonts,
+   surfaces, the primary accent, the secondary accent and the buttons. Set via
+   <body data-theme="…"> from the topbar picker and saved per browser. Western
+   is the base defined in :root, so it needs no block here.
+   ========================================================================== */
+body { transition: background-color .3s ease, color .3s ease; }
+
+/* Cold stone keep, pewter & candle-gold, blood-red primary */
+body[data-theme="dark-castle"] {
+  --rarity-common: #b9b2a4;
+  --rarity-uncommon: #6f9d7a;
+  --rarity-rare: #7d8fc4;
+  --rarity-legendary: #d8a13c;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --font-label: 'Cinzel', Georgia, serif;
+  --ink: #0e1015;
+  --inset: #14171d;
+  --panel: #1a1e26;
+  --panel-light: #262c37;
+  --leather: #2b3340;
+  --paper: #dfe3ea;
+  --text-soft: #aeb6c4;
+  --muted: #7d8698;
+  --primary: #7c1f1f;
+  --primary-bright: #b83a3a;
+  --gold: #cbb98a;
+  --brass: #8a95a6;
+  --edge: #3a4453;
+  --edge-soft: #232a34;
+  --green: #6f9d7a;
+  --btn-top: #2c3644;
+  --btn-bottom: #1b222c;
+}
+
+/* Deep-space navy, plasma-magenta primary, cyan secondary */
+body[data-theme="space"] {
+  --rarity-common: #9fb2d6;
+  --rarity-uncommon: #37e0a0;
+  --rarity-rare: #4fb8ff;
+  --rarity-legendary: #ff5ec6;
+  --font-display: 'Orbitron', 'Arial Narrow', sans-serif;
+  --font-body: 'Exo 2', system-ui, sans-serif;
+  --font-label: 'Share Tech Mono', ui-monospace, monospace;
+  --ink: #070912;
+  --inset: #0c0f1e;
+  --panel: #10152a;
+  --panel-light: #1a2140;
+  --leather: #232a52;
+  --paper: #dfe7ff;
+  --text-soft: #aab6e0;
+  --muted: #7784b8;
+  --primary: #c0398f;
+  --primary-bright: #ff5ec6;
+  --gold: #4fe3ff;
+  --brass: #5b8bd6;
+  --edge: #2b3566;
+  --edge-soft: #182046;
+  --green: #37e0a0;
+  --btn-top: #1a2350;
+  --btn-bottom: #121838;
+}
+
+/* Verdant forest, emerald primary, mithril-silver & moon-gold secondary */
+body[data-theme="elvish"] {
+  --rarity-common: #c9c2a6;
+  --rarity-uncommon: #6fc38a;
+  --rarity-rare: #79b6c6;
+  --rarity-legendary: #e8d98a;
+  --font-display: 'Uncial Antiqua', 'Cormorant Garamond', serif;
+  --font-body: 'Cormorant Garamond', Georgia, serif;
+  --font-label: 'Cormorant Garamond', Georgia, serif;
+  --ink: #0c1410;
+  --inset: #0f1a14;
+  --panel: #14231b;
+  --panel-light: #1e3327;
+  --leather: #2c4433;
+  --paper: #e6f0e0;
+  --text-soft: #b7ccb2;
+  --muted: #8aa287;
+  --primary: #2f7d54;
+  --primary-bright: #4caf7a;
+  --gold: #d8c98a;
+  --brass: #9bb59a;
+  --edge: #35563f;
+  --edge-soft: #1c2f22;
+  --green: #6fc38a;
+  --btn-top: #294a37;
+  --btn-bottom: #17281d;
+}
+
+/* Dark forge-stone, molten-orange primary, brass & copper secondary */
+body[data-theme="dwarven"] {
+  --rarity-common: #c2b49a;
+  --rarity-uncommon: #8a9a52;
+  --rarity-rare: #6f93b8;
+  --rarity-legendary: #ff7a2e;
+  --font-display: 'Metamorphous', 'Rockwell', serif;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --font-label: 'Courier New', monospace;
+  --ink: #14100c;
+  --inset: #1a140f;
+  --panel: #241c15;
+  --panel-light: #33271c;
+  --leather: #3d2c1c;
+  --paper: #ece0cf;
+  --text-soft: #c8b49a;
+  --muted: #9c8770;
+  --primary: #c2410c;
+  --primary-bright: #ff7a2e;
+  --gold: #e0a53a;
+  --brass: #b07a34;
+  --edge: #5a4126;
+  --edge-soft: #33261a;
+  --green: #8a9a52;
+  --btn-top: #4a3420;
+  --btn-bottom: #2e2015;
+}
+
+/* Heraldic steel & royal blue, crimson-gules primary, or-gold secondary */
+body[data-theme="knightly"] {
+  --rarity-common: #c3bcae;
+  --rarity-uncommon: #5f9d86;
+  --rarity-rare: #7f9ad0;
+  --rarity-legendary: #e3c063;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'EB Garamond', Georgia, serif;
+  --font-label: 'Cinzel', Georgia, serif;
+  --ink: #0f1218;
+  --inset: #141824;
+  --panel: #1a2030;
+  --panel-light: #26304a;
+  --leather: #2a3550;
+  --paper: #eef1f7;
+  --text-soft: #b9c2d6;
+  --muted: #8794ad;
+  --primary: #b1252f;
+  --primary-bright: #db3d47;
+  --gold: #e3c063;
+  --brass: #9aa7bd;
+  --edge: #37456a;
+  --edge-soft: #1f2740;
+  --green: #5f9d86;
+  --btn-top: #26314e;
+  --btn-bottom: #172038;
+}
+
+/* --- Lower-right dice launcher: collapsible FAB + two-column die grid --- */
+/* Fixed width + flex-end keeps the FAB anchored when the tools panel opens;
+   lifted clear of the zoom readout in the corner below it. */
+.dice-launcher { position: fixed; z-index: 120; right: 28px; bottom: 58px; width: 178px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.dice-launcher > * { pointer-events: auto; }
+.dice-fab { order: 2; width: 58px; height: 58px; border-radius: 50%; border: 2px solid var(--brass); background: radial-gradient(circle at 40% 34%, var(--primary-bright), var(--primary) 75%); color: var(--paper); cursor: pointer; display: grid; place-items: center; box-shadow: 0 8px 26px #000a; transition: border-color .15s, transform .1s; }
+.dice-fab svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; }
+.dice-fab:hover { border-color: var(--gold); }
+.dice-fab:active { transform: scale(.94); }
+.dice-launcher[data-open="true"] .dice-fab { border-color: var(--gold); }
+.dice-tools { order: 1; display: none; flex-direction: column; gap: 8px; width: 100%; padding: 10px; background: rgb(from var(--ink) r g b / 0.95); border: 1px solid var(--edge); border-radius: 10px; box-shadow: 0 16px 44px #000b; max-height: calc(100vh - 150px); overflow-y: auto; }
+.dice-launcher[data-open="true"] .dice-tools { display: flex; }
+/* Two columns filled bottom-up, right-first: the d20 lands in the cell nearest
+   the FAB and the rest of the set climbs away from it. row-reverse puts the
+   first child at the right of its line; wrap-reverse stacks lines upward. */
+.dice-tools .board-dice-bar { display: flex; flex-direction: row-reverse; flex-wrap: wrap-reverse; gap: 6px; }
+.dice-tools .die-btn { flex: 0 0 calc(50% - 3px); }
+.die-btn { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px 26px; border: 1px solid var(--edge-soft); border-radius: 9px; background: var(--panel); color: var(--primary-bright); cursor: pointer; transition: border-color .12s, background .12s, color .12s; }
+.die-btn svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; }
+.die-btn i { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .4px; color: var(--brass); }
+.die-btn:hover { border-color: var(--gold); background: var(--panel-light); }
+.die-btn .die-count { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 4px; display: grid; place-items: center; border-radius: 10px; background: var(--primary); color: #fff; font: 700 11px/1 Arial, sans-serif; border: 1px solid var(--gold); opacity: 0; transform: scale(.5); transition: opacity .12s, transform .12s; }
+.die-btn.selected .die-count { opacity: 1; transform: scale(1); }
+/* Per-die Advantage (A, lower-left) / Disadvantage (D, lower-right) chips —
+   they appear once a die is in the pool. Active state is a subtle theme shade. */
+.die-mode { position: absolute; bottom: 3px; width: 21px; height: 20px; display: none; place-items: center; border: 1px solid var(--edge-soft); border-radius: 5px; background: var(--inset); color: var(--muted); font: 800 10px/1 inherit; cursor: pointer; z-index: 2; transition: color .12s, border-color .12s; }
+.die-mode[data-mode="advantage"] { left: 6px; }
+.die-mode[data-mode="disadvantage"] { right: 6px; }
+.die-btn.selected .die-mode { display: grid; }
+.die-mode:hover { border-color: var(--gold); color: var(--paper); }
+.die-mode.active { border-color: var(--primary-bright); color: var(--primary-bright); }
+.dice-extra { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; }
+.dice-extra > button { border: 1px solid var(--edge-soft); background: var(--inset); color: var(--gold); border-radius: 5px; padding: 3px 7px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.dice-extra > button:hover { border-color: var(--gold); }
+.dice-modifier { display: inline-flex; align-items: center; gap: 3px; }
+/* The wide dice bar above centers on the panel, so drop the auto margin the
+   older inline dice bar uses to shove the modifier left. */
+.dice-tools .dice-modifier { margin-right: 0; }
+.dice-modifier button { border: 1px solid var(--edge-soft); background: var(--inset); color: var(--gold); border-radius: 5px; width: 20px; height: 20px; line-height: 1; cursor: pointer; }
+.dice-modifier strong { color: var(--paper); font-size: 12px; min-width: 24px; text-align: center; }
+.dice-tools-actions { display: flex; gap: 6px; }
+.dice-tools-actions .button { flex: 1; padding: 7px 4px; font-size: 12px; }
+[data-quick].active { background: var(--primary); color: #fff; border-color: var(--gold); }
+.dice-history-link { align-self: center; margin-top: 2px; background: none; border: 0; color: var(--gold); font: 700 11px/1 inherit; letter-spacing: .4px; cursor: pointer; text-transform: uppercase; }
+.dice-history-link:hover { color: var(--gold); }
+.dice-rattle { align-self: center; margin-top: 4px; background: none; border: 1px solid var(--edge); border-radius: 20px; padding: 3px 10px; color: #6f6249; font: 700 10px/1 inherit; letter-spacing: .6px; cursor: pointer; text-transform: uppercase; }
+.dice-rattle:hover { border-color: var(--gold); }
+.dice-rattle.on { color: var(--gold); border-color: rgb(from var(--gold) r g b / 0.5); }
+
+/* --- Roll history drawer (right side) --- */
+.dice-drawer { position: fixed; z-index: 310; top: calc(68px + var(--preview-bar, 0px)); right: 0; bottom: 0; width: min(320px, 88vw); display: flex; flex-direction: column; background: rgb(from var(--ink) r g b / 0.97); border-left: 1px solid var(--edge); box-shadow: -14px 0 40px #000a; transform: translateX(100%); visibility: hidden; transition: transform .28s cubic-bezier(.2,.8,.2,1), visibility 0s linear .28s; }
+.dice-drawer.open { transform: translateX(0); visibility: visible; transition-delay: 0s; }
+.dice-drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--edge-soft); }
+.dice-drawer-head h3 { margin: 0; color: var(--gold); font: 700 14px/1 var(--font-display); letter-spacing: .04em; text-transform: uppercase; }
+.dice-drawer-head button { border: 0; background: none; color: var(--gold); font-size: 22px; line-height: 1; cursor: pointer; }
+/* There is exactly one `.dice-history` in the page and it lives in this drawer,
+   so it gets one set of rules. It used to carry two — an older compact-strip set
+   and this one — and the drawer's half only overrode some of it, which left the
+   list capped at 120px inside an 880px drawer and the total floating centred
+   away from the name it belonged to.
+   `flex: 1` fills the drawer, `min-height: 0` is what actually lets it scroll:
+   without it a flex item refuses to shrink below its content and the overflow
+   goes to the page instead of the list. */
+.dice-drawer .dice-history {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  list-style: none; margin: 0; padding: 10px 14px 16px;
+}
+.dice-drawer .dice-history:empty::after { content: "No rolls yet."; color: var(--muted); font-style: italic; font-size: 12px; }
+.dice-drawer .dice-history li {
+  flex: 0 0 auto; display: flex; flex-direction: column; gap: 1px;
+  padding: 8px 10px; background: rgb(from var(--ink) r g b / 0.67); border-left: 3px solid var(--primary);
+}
+.dice-drawer .dice-history li span { color: var(--brass); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.dice-drawer .dice-history li strong { align-self: start; color: var(--gold); font: 700 21px/1 var(--font-body); }
+.dice-drawer .dice-history li small { color: var(--text-soft); font-size: 11px; }
+
+/* The item layer. State the DM flips mid-scene sits above the numbers, because
+   "is it still locked" is asked far more often than "what was the DC". */
+/* Rarity is read where it is written: the row in the item block becomes the
+   control itself rather than gaining a second copy in a panel of its own. */
+.sheet-entries .rarity-select { width: 100%; text-transform: capitalize; }
+
+/* The writable half of the sheet — what the sidebar used to carry. It wears the
+   same frame as every other block below a heading, so an editable actor reads as
+   one document rather than a reference sheet with a form stapled underneath. */
+.sheet-manage { padding: 4px 11px 12px; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); }
+.sheet-manage .field { margin: 10px 0; }
+.sheet-manage .field[hidden], .sheet-manage .toggle[hidden] { display: none; }
+.sheet-manage .manage-toggle { margin: 10px 0 12px; }
+.sheet-manage textarea { resize: vertical; }
+.sheet-manage .damage-row { margin: 14px 0 8px; }
+.sheet-manage .button.wide + .button.wide { margin-top: 7px; }
+
+.item-controls { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); }
+.item-controls:empty { display: none; }
+.item-controls .button.active { border-color: var(--brass); color: var(--brass); }
+.item-contents { border: 1px solid var(--edge-soft); border-top: 0; background: var(--panel); padding: 8px 10px; }
+.item-contents h4 { margin: 0 0 6px; font: 700 11px/1.1 Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.item-contents ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.item-contents li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+
+/* Where a light is standing, on the DM's screen only — a player can see the
+   light itself. Carried lights get a ring so it is obvious at a glance which
+   ones will walk off when their bearer does. */
+.light-pip { position: absolute; z-index: 2; width: 13px; height: 13px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle, #ffe6ad 0%, #ffb761 55%, #a25f16 100%); box-shadow: 0 0 10px 3px rgb(255 183 97 / 0.5); pointer-events: none; }
+.light-pip.carried { border: 2px solid rgb(from var(--paper) r g b / 0.8); margin: -8px 0 0 -8px; }
+.light-pip.out { background: #4a4038; box-shadow: none; opacity: .75; }
+/* A square that leads off this floor. Quiet on purpose — it marks the stair
+   without drawing the eye off whatever is standing on it, and it carries its
+   label in the tooltip rather than on the boards. */
+.exit-mark {
+  position: absolute; z-index: 1; transform: translate(-50%, -50%); pointer-events: none;
+  border: 1px dashed rgb(from var(--brass) r g b / 0.62);
+  background: radial-gradient(circle, rgb(from var(--brass) r g b / 0.17) 0%, transparent 72%);
+}
+/* The near end of a link being drawn — loud, because the DM is about to change
+   floor and needs to remember what they are joining this to. */
+.exit-mark.drafting {
+  border: 2px solid var(--gold); animation: exit-pulse 1.4s ease-in-out infinite;
+  background: radial-gradient(circle, rgb(from var(--gold) r g b / 0.3) 0%, transparent 70%);
+}
+@keyframes exit-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .exit-mark.drafting { animation: none; } }
+/* The exit tool takes single clicks on empty ground, so say so with the cursor
+   the same way the flame and light brushes do. */
+.viewport[data-brush="exit"] { cursor: crosshair; }

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roll the Bones — The Last Ten Days of Laramie</title>
+<link rel="stylesheet" href="dice/style.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900&family=Rye&display=swap');
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin:0; padding:0 0 3rem; background:#1d160f; color:#ecdfbf;
+    font-family:'Old Standard TT',serif;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(180,140,70,.10), transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 1.2rem; }
+  a.home { display:inline-block; margin:1rem 0 -1rem 1.2rem; color:#b89455; text-decoration:none; font-size:.82rem; letter-spacing:1px; text-transform:uppercase; }
+  a.home:hover { color:#e8c877; }
+
+  /* ---------- HERO ---------- */
+  header.hero { text-align:center; padding:2.2rem 1rem .4rem; }
+  header .super { text-transform:uppercase; letter-spacing:7px; font-size:.78rem; color:#b89455; }
+  header h1 {
+    font-family:'Rye','Playfair Display',serif; font-size:clamp(2.4rem,7vw,4.6rem);
+    margin:.5rem 0 .1rem; color:#e8c877; line-height:.95;
+    text-shadow:3px 3px 0 #000, 0 0 30px rgba(232,200,119,.25);
+  }
+  header .motto { font-style:italic; font-size:1.02rem; color:#cdbf9a; max-width:680px; margin:.6rem auto 0; line-height:1.5; }
+
+  /* ---------- THE TABLE (dice tray) ---------- */
+  .tray-frame {
+    margin:1.8rem 0 1rem; border:3px solid #5c3f24; border-radius:6px; overflow:hidden;
+    box-shadow:0 0 40px rgba(0,0,0,.6), inset 0 0 50px rgba(0,0,0,.4); position:relative;
+  }
+  #dice-tray {
+    position:relative; width:100%; height:min(58vh,520px); min-height:340px; cursor:pointer;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 42%, #2e5d3a 0%, #1f4429 55%, #14301d 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+  #dice-tray canvas { position:absolute; inset:0; width:100% !important; height:100% !important; }
+
+  .tray-hint {
+    position:absolute; left:0; right:0; bottom:10px; text-align:center; z-index:4; pointer-events:none;
+    font-style:italic; font-size:.84rem; color:#d8e6cf; text-shadow:1px 1px 3px #000; opacity:.85;
+  }
+  .loading {
+    position:absolute; inset:0; z-index:6; display:flex; align-items:center; justify-content:center;
+    background:rgba(10,7,4,.55); color:#e8c877; font-family:'Rye',serif; font-size:1.3rem; letter-spacing:1px;
+    text-shadow:2px 2px 0 #000; transition:opacity .4s; text-align:center; padding:1rem;
+  }
+  .loading.gone { opacity:0; pointer-events:none; }
+
+  /* readout overlay */
+  .readout { position:absolute; left:0; right:0; bottom:14px; text-align:center; z-index:4; pointer-events:none; }
+  .readout .total { display:inline-flex; align-items:baseline; gap:.5rem; background:rgba(20,14,9,.55);
+    border:2px solid #5c3f24; border-radius:5px; padding:.25rem 1rem; backdrop-filter:blur(1px); }
+  .readout .bignum { font-family:'Rye',serif; font-size:clamp(2.4rem,7vw,4rem); line-height:.9; color:#ff7a4a;
+    text-shadow:3px 3px 0 #000, 0 0 24px rgba(255,90,40,.5); }
+  .readout .tlabel { font-family:'Rye',serif; font-size:clamp(.8rem,2.4vw,1.1rem); color:#ffe6a8; letter-spacing:2px;
+    text-shadow:2px 2px 0 #000; text-transform:uppercase; }
+  .readout .breakdown { margin-top:.35rem; font-style:italic; color:#f0dcae; font-size:.86rem; text-shadow:1px 1px 2px #000;
+    max-width:90%; margin-left:auto; margin-right:auto; }
+  .readout .breakdown b { color:#fff; font-style:normal; }
+  .readout.empty { display:none; }
+  .readout .crit { color:#7fe07f; font-weight:bold; } .readout .fumble { color:#ff5a4a; font-weight:bold; }
+
+  /* ---------- CONTROL DECK ---------- */
+  .deck { border:2px solid #5c4a2a; background:rgba(20,14,9,.5); padding:1.1rem 1.1rem 1.3rem; border-radius:5px; }
+  .deck h2 { font-family:'Rye','Playfair Display',serif; color:#e8c877; text-align:center; font-size:1.2rem; margin:.1rem 0 1rem; letter-spacing:1px; }
+
+  .dicebar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.55rem; }
+  @media(max-width:560px){ .dicebar{ grid-template-columns:repeat(4,1fr);} }
+  .die-btn {
+    position:relative; border:2px solid #b89455; background:rgba(40,28,18,.55); color:#ecdfbf; cursor:pointer;
+    padding:.7rem .2rem .55rem; border-radius:5px; font-family:'Rye',serif; transition:transform .1s, box-shadow .1s, background .1s;
+    box-shadow:2px 2px 0 rgba(0,0,0,.4); display:flex; flex-direction:column; align-items:center; gap:.25rem;
+  }
+  .die-btn:hover { transform:translateY(-2px); background:rgba(60,42,26,.85); box-shadow:3px 4px 0 rgba(0,0,0,.5); }
+  .die-btn:active { transform:translateY(0); }
+  .die-btn .glyph { width:40px; height:40px; }
+  .die-btn .lbl { font-size:1rem; color:#e8c877; letter-spacing:1px; }
+  .die-btn .count {
+    position:absolute; top:-9px; right:-9px; min-width:22px; height:22px; padding:0 5px; border-radius:11px;
+    background:#7d2a1d; color:#ffe6a8; border:2px solid #e8c877; font-family:'Old Standard TT',serif; font-weight:bold;
+    font-size:.8rem; display:none; align-items:center; justify-content:center; line-height:1; box-shadow:0 0 8px rgba(0,0,0,.5);
+  }
+  .die-btn.has .count { display:flex; }
+
+  .row2 { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.7rem 1.1rem; margin-top:1.1rem; }
+  .mod { display:flex; align-items:center; gap:.4rem; border:2px solid #5c4a2a; border-radius:5px; padding:.3rem .5rem; background:rgba(20,14,9,.4); }
+  .mod .mlabel { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:#b89455; }
+  .mod button { width:30px; height:30px; border:1px solid #b89455; background:rgba(40,28,18,.7); color:#e8c877;
+    font-size:1.2rem; line-height:1; border-radius:4px; cursor:pointer; font-family:'Rye',serif; }
+  .mod button:hover { background:#3a281a; }
+  .mod .mval { font-family:'Rye',serif; font-size:1.3rem; color:#ffe6a8; min-width:34px; text-align:center; }
+
+  .btn {
+    font-family:'Rye',serif; letter-spacing:1px; cursor:pointer; border-radius:5px; padding:.6rem 1.4rem;
+    border:2px solid #b89455; background:rgba(40,28,18,.6); color:#ecdfbf; font-size:1rem; transition:transform .1s, background .1s, box-shadow .1s;
+    box-shadow:2px 2px 0 rgba(0,0,0,.4);
+  }
+  .btn:hover { transform:translateY(-2px); background:rgba(60,42,26,.9); }
+  .btn.primary { background:linear-gradient(180deg,#9a3322,#6e1f16); color:#ffe6a8; border-color:#e8c877; font-size:1.15rem; padding:.65rem 2rem; }
+  .btn.primary:hover { background:linear-gradient(180deg,#b03a26,#7d2419); box-shadow:0 0 18px rgba(255,90,40,.4); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+  .quick { display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem; margin-top:1.1rem; }
+  .qbtn { font-family:'Old Standard TT',serif; font-size:.82rem; letter-spacing:1px; text-transform:uppercase;
+    border:1px solid #5c4a2a; background:rgba(20,14,9,.4); color:#cdbf9a; padding:.4rem .8rem; border-radius:20px; cursor:pointer; }
+  .qbtn:hover { border-color:#e8c877; color:#e8c877; background:rgba(40,28,18,.7); }
+
+  .palette { display:flex; align-items:center; justify-content:center; gap:.5rem; margin-top:1.1rem; flex-wrap:wrap; }
+  .palette .plabel { font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:#b89455; }
+  .swatch { width:26px; height:26px; border-radius:50%; border:2px solid #5c4a2a; cursor:pointer; }
+  .swatch.on { border-color:#e8c877; box-shadow:0 0 10px rgba(232,200,119,.6); }
+
+  .sndbtn { font-family:'Old Standard TT',serif; font-size:.72rem; letter-spacing:1.5px; text-transform:uppercase;
+    border:1px solid #5c4a2a; background:rgba(20,14,9,.4); color:#6f6249; padding:.32rem .7rem; border-radius:20px;
+    cursor:pointer; margin-left:.6rem; }
+  .sndbtn:hover { border-color:#b89455; }
+  .sndbtn.on { color:#e8c877; border-color:#b89455; }
+
+  /* ---------- ARSENAL (weapon attack rolls) ---------- */
+  .arsenal { margin-top:1.2rem; }
+  #weapon-select {
+    width:100%; max-width:520px; display:block; margin:0 auto .9rem; font-family:'Old Standard TT',serif;
+    font-size:1rem; padding:.55rem .7rem; color:#ecdfbf; background:rgba(40,28,18,.7);
+    border:2px solid #b89455; border-radius:5px; cursor:pointer;
+  }
+  #weapon-select optgroup { color:#e8c877; background:#1d160f; font-family:'Rye',serif; }
+  #weapon-select option { color:#ecdfbf; background:#2c2118; font-family:'Old Standard TT',serif; }
+  .wdetail { text-align:center; margin:0 auto .7rem; max-width:580px; }
+  .wdetail .wd-dmg { font-family:'Rye',serif; font-size:1.7rem; color:#ff7a4a; text-shadow:2px 2px 0 #000; letter-spacing:1px; }
+  .wdetail .wd-sub { display:block; font-size:.74rem; text-transform:uppercase; letter-spacing:1.5px; color:#b89455; margin-top:.2rem; }
+  .wdetail .wd-notes { font-style:italic; color:#cdbf9a; font-size:.86rem; margin-top:.5rem; line-height:1.5; }
+  .wfeats { display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem; margin:0 auto .7rem; max-width:620px; }
+  .wfeats:empty { display:none; }
+  .wfeats label {
+    display:inline-flex; align-items:center; gap:.45rem; font-size:.82rem; color:#cdbf9a; cursor:pointer;
+    border:1px solid #5c4a2a; border-radius:20px; padding:.32rem .85rem; background:rgba(20,14,9,.4);
+  }
+  .wfeats label:hover { border-color:#e8c877; color:#e8c877; }
+  .wfeats input { accent-color:#7d2a1d; }
+  #damage-btn { display:none; }
+  #damage-btn.show { display:inline-block; }
+  .readout .dim { opacity:.6; font-style:normal; }
+
+  footer { text-align:center; margin-top:2.4rem; padding-top:1.2rem; border-top:1px solid #5c4a2a; font-style:italic; font-size:.82rem; color:#9a8a62; }
+</style>
+</head>
+<body>
+
+  <a class="home" href="index.html">← Back to Front Street</a>
+
+  <header class="hero">
+    <div class="super">Laramie City · Wyoming Territory · Games of Chance</div>
+    <h1>Roll the Bones</h1>
+    <p class="motto">Step up to the felt and let the dice fall. Build your throw, set your modifier, and turn 'em loose — same dice the railroad men, the gamblers, and the gunhands all answer to.</p>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ============ THE TABLE ============ -->
+    <div class="tray-frame">
+      <div id="dice-tray">
+        <div class="loading" id="loading">Setting out the bones…</div>
+        <div class="readout empty" id="readout">
+          <div class="total"><span class="bignum" id="bignum">0</span><span class="tlabel" id="tlabel">total</span></div>
+          <div class="breakdown" id="breakdown"></div>
+        </div>
+        <div class="tray-hint" id="trayhint">Pick your dice below, then pull the lever. Click the felt to clear the table.</div>
+      </div>
+    </div>
+
+    <!-- ============ CONTROL DECK ============ -->
+    <div class="deck">
+      <h2>Build Your Throw</h2>
+      <div class="dicebar" id="dicebar"><!-- die buttons injected --></div>
+
+      <div class="row2">
+        <div class="mod">
+          <span class="mlabel">Modifier</span>
+          <button id="mod-dn" aria-label="decrease modifier">−</button>
+          <span class="mval" id="mod-val">+0</span>
+          <button id="mod-up" aria-label="increase modifier">+</button>
+        </div>
+        <button class="btn primary" id="roll-btn" disabled>Roll the Bones</button>
+        <button class="btn" id="clear-btn">Clear Table</button>
+      </div>
+
+      <div class="quick">
+        <button class="qbtn" data-q="1d20">1d20</button>
+        <button class="qbtn" data-q="adv">d20 Advantage</button>
+        <button class="qbtn" data-q="dis">d20 Disadvantage</button>
+        <button class="qbtn" data-q="2d6">2d6</button>
+        <button class="qbtn" data-q="4d6">4d6 (stat)</button>
+        <button class="qbtn" data-q="reroll">↻ Reroll Last</button>
+      </div>
+
+      <div class="palette">
+        <span class="plabel">Bones</span>
+        <span class="swatch on" data-color="#7d2a1d" style="background:#7d2a1d" title="Oxblood"></span>
+        <span class="swatch" data-color="#1d160f" style="background:#2a2018" title="Jet"></span>
+        <span class="swatch" data-color="#2f5d3a" style="background:#2f5d3a" title="Felt Green"></span>
+        <span class="swatch" data-color="#b8821f" style="background:#b8821f" title="Whiskey Gold"></span>
+        <span class="swatch" data-color="#d9c9a3" style="background:#d9c9a3" title="Old Bone"></span>
+        <button class="sndbtn on" id="snd-btn" aria-pressed="true" title="Sound as the dice roll and strike the table">🔊 Rattle</button>
+      </div>
+    </div>
+
+    <!-- ============ ARSENAL — ATTACK ROLLS ============ -->
+    <div class="deck arsenal">
+      <h2>Front Street Arsenal · Attack Rolls</h2>
+      <select id="weapon-select" aria-label="Choose a weapon"></select>
+      <div class="wdetail" id="wdetail"></div>
+      <div class="wfeats" id="wfeats"></div>
+      <div class="row2">
+        <div class="mod" id="tohit-box">
+          <span class="mlabel">To Hit</span>
+          <button id="th-dn" aria-label="decrease to-hit">−</button>
+          <span class="mval" id="th-val">+0</span>
+          <button id="th-up" aria-label="increase to-hit">+</button>
+        </div>
+        <div class="mod" id="dmg-box">
+          <span class="mlabel">Dmg +</span>
+          <button id="db-dn" aria-label="decrease damage bonus">−</button>
+          <span class="mval" id="db-val">+0</span>
+          <button id="db-up" aria-label="increase damage bonus">+</button>
+        </div>
+        <button class="btn primary" id="attack-btn">⚔ Roll to Hit</button>
+        <button class="btn primary" id="damage-btn">🎯 Roll Damage</button>
+        <button class="btn" id="wclear-btn">Clear</button>
+      </div>
+    </div>
+
+    <footer>
+      The Frontier Index is published daily upon Front Street. &nbsp;Truth, Progress, and the Iron Promise.<br>
+      A tabletop campaign set in Laramie City, Wyoming Territory, 1868.
+    </footer>
+  </div>
+
+<script type="module">
+  import DiceBox from "./dice/dice-box.es.min.js";
+
+  import { Rattle } from "./dice/rattle.js";
+
+  // A sound each time a die strikes the table. Must patch the physics world
+  // module before any DiceBox is constructed — see dice/rattle.js.
+  await Rattle.install();
+  Rattle.bindToggle(document.getElementById('snd-btn'));
+
+  // --- die glyph SVGs (simple silhouettes) -------------------------------
+  const G = {
+    d4:  '<polygon points="20,3 37,34 3,34"/>',
+    d6:  '<rect x="6" y="6" width="28" height="28" rx="4"/>',
+    d8:  '<polygon points="20,3 36,20 20,37 4,20"/>',
+    d10: '<polygon points="20,3 35,16 30,34 10,34 5,16"/>',
+    d12: '<polygon points="20,3 33,9 38,23 29,35 11,35 2,23 7,9"/>',
+    d20: '<polygon points="20,3 35,12 35,28 20,37 5,28 5,12"/>',
+    d100:'<polygon points="20,3 35,16 30,34 10,34 5,16"/>'
+  };
+  const DICE = [
+    {sides:4,key:'d4'}, {sides:6,key:'d6'}, {sides:8,key:'d8'}, {sides:10,key:'d10'},
+    {sides:12,key:'d12'}, {sides:20,key:'d20'}, {sides:100,key:'d100'}
+  ];
+
+  // --- state -------------------------------------------------------------
+  const pool = {4:0,6:0,8:0,10:0,12:0,20:0,100:0};
+  let modifier = 0;
+  let diceColor = "#7d2a1d";
+  let lastThrow = null;          // remembered for reroll
+  let mode = 'normal';           // 'normal' | 'adv' | 'dis'
+
+  // --- build the die buttons --------------------------------------------
+  const bar = document.getElementById('dicebar');
+  DICE.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'die-btn'; b.dataset.sides = d.sides;
+    b.innerHTML =
+      '<svg class="glyph" viewBox="0 0 40 40" fill="none" stroke="#e8c877" stroke-width="2" stroke-linejoin="round">' + G[d.key] + '</svg>' +
+      '<span class="lbl">' + d.key + '</span>' +
+      '<span class="count">0</span>';
+    b.addEventListener('click', () => { pool[d.sides]++; refreshPool(); });
+    bar.appendChild(b);
+  });
+
+  function refreshPool() {
+    let any = false;
+    document.querySelectorAll('.die-btn').forEach(b => {
+      const s = b.dataset.sides, q = pool[s];
+      b.classList.toggle('has', q > 0);
+      b.querySelector('.count').textContent = q;
+      if (q > 0) any = true;
+    });
+    document.getElementById('roll-btn').disabled = !ready || !any;
+  }
+
+  // --- modifier ----------------------------------------------------------
+  function setMod(v){ modifier = Math.max(-20, Math.min(20, v)); document.getElementById('mod-val').textContent = (modifier>=0?'+':'') + modifier; }
+  document.getElementById('mod-up').onclick = () => setMod(modifier+1);
+  document.getElementById('mod-dn').onclick = () => setMod(modifier-1);
+
+  // --- palette -----------------------------------------------------------
+  document.querySelectorAll('.swatch').forEach(s => s.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('on'));
+    s.classList.add('on'); diceColor = s.dataset.color;
+  }));
+
+  // --- the dice box ------------------------------------------------------
+  // assetPath is built relative to this page so it works at any GitHub Pages
+  // base path (e.g. /laramie-campaign/) as well as a custom domain or locally.
+  // assetPath is the path portion (includes any GitHub Pages base, e.g. /laramie-campaign/);
+  // origin is the full scheme+host. dice-box builds asset URLs as origin+assetPath, and the
+  // physics worker needs that to be an absolute URL it can fetch.
+  const assetPath = new URL('./dice/assets/', document.baseURI).pathname;
+
+  const box = new DiceBox({
+    container: '#dice-tray',
+    assetPath,
+    origin: window.location.origin,
+    theme: 'default',
+    themeColor: diceColor,
+    scale: 6,
+    offscreen: false,           // force the no-worker onscreen renderer (GitHub Pages safe)
+    enableShadows: true,
+    shadowTransparency: 0.7,
+    lightIntensity: 1.1,
+    gravity: 1.6,
+  });
+
+  let ready = false;
+  box.init().then(() => {
+    ready = true;
+    document.getElementById('loading').classList.add('gone');
+    refreshPool();
+  }).catch(err => {
+    document.getElementById('loading').textContent = 'The bones got stuck in the mud. (' + err.message + ')';
+    console.error(err);
+  });
+
+  // ===================================================================
+  //  ROLL DISPATCH — every roll sets `ctx`, which tells onRollComplete
+  //  how to read & present the dice that just settled.
+  // ===================================================================
+  let ctx = null;
+
+  box.onRollComplete = (results) => {
+    const flat = [];
+    results.forEach(g => (g.rolls || []).forEach(r => flat.push({ sides: r.sides, value: r.value })));
+    if (!flat.length || !ctx) return;
+    switch (ctx.kind) {
+      case 'manual': return renderManual(flat);
+      case 'whit':   return renderToHit(flat);
+      case 'wdmg':   return renderDamage(flat);
+      case 'wsave':  return renderSave(flat);
+    }
+  };
+
+  // shared helpers
+  function setReadout(num, label, html){
+    document.getElementById('bignum').textContent = num;
+    document.getElementById('tlabel').textContent = label;
+    document.getElementById('breakdown').innerHTML = html;
+    document.getElementById('readout').classList.remove('empty');
+  }
+  function hideReadout(){ document.getElementById('readout').classList.add('empty'); }
+  function hideHint(){ document.getElementById('trayhint').style.opacity = 0; }
+  function showHint(){ document.getElementById('trayhint').style.opacity = .85; }
+  const sign = n => (n>0?' + '+n : n<0?' − '+Math.abs(n) : '');
+  function parseDice(s){ const m=/^\s*(\d+)d(\d+)\s*$/.exec(s||''); return m?{qty:+m[1],sides:+m[2]}:null; }
+  function tally(flat){ const p={}; flat.forEach(r=>{const k='d'+r.sides;(p[k]=p[k]||[]).push(r.value);}); return Object.keys(p).map(k=>k+' ('+p[k].join(', ')+')'); }
+
+  // ----------------------------------------------------------- MANUAL DICE
+  function groupsFromPool() {
+    return Object.keys(pool).filter(s => pool[s] > 0).map(s => ({ qty: pool[s], sides: Number(s) }));
+  }
+  function doRoll(groups, rollMode) {
+    if (!ready || !groups.length) return;
+    ctx = { kind:'manual', mode: rollMode || 'normal', modifier };
+    lastThrow = { groups: JSON.parse(JSON.stringify(groups)), modifier, mode: ctx.mode };
+    hideReadout(); hideHint();
+    box.roll(groups.map(g => ({ ...g, themeColor: diceColor })));
+  }
+  function renderManual(flat){
+    const { mode, modifier:mod } = ctx;
+    if (mode==='adv' || mode==='dis'){
+      const a = flat[0].value, b = flat[1] ? flat[1].value : a;
+      const keep = mode==='adv' ? Math.max(a,b) : Math.min(a,b);
+      const drop = mode==='adv' ? Math.min(a,b) : Math.max(a,b);
+      let html = (mode==='adv'?'Advantage':'Disadvantage') + ': kept <b>'+keep+'</b>, dropped <span class="dim">'+drop+'</span>' + sign(mod);
+      if (keep===20) html += ' <span class="crit">— Natural 20!</span>'; else if (keep===1) html += ' <span class="fumble">— Natural 1.</span>';
+      return setReadout(keep+mod, 'RESULT', html);
+    }
+    const sum = flat.reduce((t,r)=>t+r.value, 0);
+    let html = tally(flat).join(' &nbsp;+&nbsp; ') + sign(mod);
+    if (flat.length===1 && flat[0].sides===20){ if(flat[0].value===20) html+=' <span class="crit">— Natural 20!</span>'; else if(flat[0].value===1) html+=' <span class="fumble">— Natural 1.</span>'; }
+    setReadout(sum+mod, 'TOTAL', html);
+  }
+
+  document.getElementById('roll-btn').onclick = () => doRoll(groupsFromPool(), 'normal');
+  document.getElementById('clear-btn').onclick = clearTable;
+  document.getElementById('dice-tray').addEventListener('click', (e) => {
+    if (e.target.id === 'dice-tray' || e.target.id === 'trayhint') clearTable();
+  });
+  function clearTable() {
+    Object.keys(pool).forEach(k => pool[k] = 0);
+    refreshPool();
+    if (ready) box.clear();
+    hideReadout(); showHint(); hideDamageBtn(); pendingDamage = null;
+  }
+
+  document.querySelectorAll('.qbtn').forEach(q => q.addEventListener('click', () => {
+    const kind = q.dataset.q;
+    if (kind === 'reroll') { if (lastThrow){ modifier = lastThrow.modifier; setMod(modifier); doRoll(lastThrow.groups, lastThrow.mode);} return; }
+    if (kind === 'adv') return doRoll([{qty:2, sides:20}], 'adv');
+    if (kind === 'dis') return doRoll([{qty:2, sides:20}], 'dis');
+    const m = kind.match(/^(\d+)d(\d+)$/);
+    if (m) doRoll([{qty:Number(m[1]), sides:Number(m[2])}], 'normal');
+  }));
+
+  // ================================================ ARSENAL — ATTACK ROLLS
+  const GOLD = '#b8821f';            // the to-hit d20 rolls in gold to stand apart from damage
+  let WEAPONS = [];
+  let toHit = 0, dmgBonus = 0, pendingDamage = null;
+  const wsel = document.getElementById('weapon-select');
+  const damageBtn = document.getElementById('damage-btn');
+
+  // weapons.json is the single source of truth (mirrors prices.json)
+  fetch('weapons.json')
+    .then(r => r.json())
+    .then(data => { WEAPONS = data.weapons || []; buildWeaponList(); })
+    .catch(err => { document.getElementById('wdetail').innerHTML =
+      '<span class="wd-notes">Could not load the arsenal (weapons.json). ' + err.message + '</span>'; });
+
+  function buildWeaponList(){
+    [...new Set(WEAPONS.map(w=>w.cat))].forEach(c => {
+      const og = document.createElement('optgroup'); og.label = c;
+      WEAPONS.filter(w=>w.cat===c).forEach(w => {
+        const o = document.createElement('option'); o.value = w.name; o.textContent = w.name; og.appendChild(o);
+      });
+      wsel.appendChild(og);
+    });
+    wsel.addEventListener('change', selectWeapon);
+    selectWeapon();
+  }
+
+  const currentWeapon = () => WEAPONS.find(w => w.name === wsel.value);
+  const checkedFeats  = () => new Set([...document.querySelectorAll('.wfeat:checked')].map(c => c.value));
+
+  // resolve damage/save after applying any feat overrides (e.g. Both Barrels)
+  function resolve(w, checked){
+    let dmg = w.dmg, save = w.save;
+    (w.feats||[]).forEach(f => { if (checked.has(f.id)){ if (f.setDmg) dmg = f.setDmg; if (f.setSave) save = f.setSave; } });
+    return { dmg, save };
+  }
+
+  // build the feat checkboxes once per weapon (toggling them must NOT rebuild the list)
+  function selectWeapon(){
+    const w = currentWeapon(); if (!w) return;
+    const fc = document.getElementById('wfeats'); fc.innerHTML = '';
+    (w.feats||[]).forEach(f => {
+      const lab = document.createElement('label');
+      lab.innerHTML = '<input type="checkbox" class="wfeat" value="' + f.id + '"> ' + f.label;
+      lab.querySelector('input').addEventListener('change', renderDetail);
+      fc.appendChild(lab);
+    });
+    renderDetail();
+  }
+
+  // update the detail card + button for the current weapon & checked feats (no rebuild)
+  function renderDetail(){
+    const w = currentWeapon(); if (!w) return;
+    const { dmg, save } = resolve(w, checkedFeats());
+    let detail = '<span class="wd-dmg">' + (dmg ? dmg + ' ' + (w.dtype||'') : 'No damage') + '</span>';
+    const meta = [];
+    if (w.range) meta.push(w.range);
+    if (w.area)  meta.push(w.area);
+    if (save)    meta.push(save + ' save');
+    detail += '<span class="wd-sub">' + meta.join(' · ') + '</span>';
+    if (w.notes) detail += '<div class="wd-notes">' + w.notes + '</div>';
+    document.getElementById('wdetail').innerHTML = detail;
+
+    const isSave = w.type === 'save';
+    document.getElementById('tohit-box').style.display = isSave ? 'none' : '';
+    document.getElementById('attack-btn').textContent =
+      isSave ? (w.dtype === 'fire' ? '💥 Detonate' : '💥 Fire')
+             : (w.dmg ? '⚔ Roll to Hit' : '🪢 Roll to Hit');
+    hideDamageBtn(); pendingDamage = null; hideReadout();
+  }
+
+  // to-hit / damage-bonus steppers
+  function setTH(v){ toHit   = Math.max(-10, Math.min(20, v)); document.getElementById('th-val').textContent = (toHit>=0?'+':'') + toHit; }
+  function setDB(v){ dmgBonus= Math.max(-10, Math.min(20, v)); document.getElementById('db-val').textContent = (dmgBonus>=0?'+':'') + dmgBonus; }
+  document.getElementById('th-up').onclick = () => setTH(toHit+1);
+  document.getElementById('th-dn').onclick = () => setTH(toHit-1);
+  document.getElementById('db-up').onclick = () => setDB(dmgBonus+1);
+  document.getElementById('db-dn').onclick = () => setDB(dmgBonus-1);
+
+  function showDamageBtn(crit){ damageBtn.textContent = crit ? '💥 Roll CRITICAL Damage!' : '🎯 Roll Damage'; damageBtn.classList.add('show'); }
+  function hideDamageBtn(){ damageBtn.classList.remove('show'); }
+
+  // ATTACK — roll to hit (or, for area weapons, straight to damage + save)
+  document.getElementById('attack-btn').onclick = () => {
+    if (!ready) return;
+    const w = currentWeapon(); if (!w) return;
+    const checked = checkedFeats();
+    hideReadout(); hideHint();
+    if (w.type === 'save'){
+      const d = parseDice(resolve(w, checked).dmg); if (!d) return;
+      ctx = { kind:'wsave', w, checked };
+      return box.roll([{ ...d, themeColor: diceColor }]);
+    }
+    ctx = { kind:'whit', w, checked };
+    box.roll([{ qty:1, sides:20, themeColor: GOLD }]);
+  };
+
+  function renderToHit(flat){
+    const w = ctx.w, nat = flat[0].value, total = nat + toHit;
+    const crit = nat===20, fumble = nat===1;
+    let html = '<b>To Hit ' + total + '</b> <span class="dim">(' + nat + (toHit?sign(toHit):'') + ')</span>';
+    if (crit)        html += ' <span class="crit">— CRITICAL HIT!</span>';
+    else if (fumble) html += ' <span class="fumble">— natural 1, a clean miss' + (w.misfire?' · the gun jams!':'') + '</span>';
+    setReadout(total, 'TO HIT', html);
+    if (fumble){ hideDamageBtn(); pendingDamage = null; return; }            // a miss — no damage
+    if (!w.dmg){                                                              // lasso: hits, deals no damage
+      document.getElementById('breakdown').innerHTML += ' <span class="dim">· target Restrained</span>';
+      hideDamageBtn(); pendingDamage = null; return;
+    }
+    pendingDamage = { w, checked: ctx.checked, crit };
+    showDamageBtn(crit);
+  }
+
+  // DAMAGE — crit doubles the weapon dice; Brutal adds one more; feats add their dice
+  damageBtn.onclick = () => {
+    if (!ready || !pendingDamage) return;
+    const { w, checked, crit } = pendingDamage;
+    const base = parseDice(resolve(w, checked).dmg); if (!base) return;
+    const qty = base.qty * (crit ? 2 : 1) + ((crit && w.brutal) ? 1 : 0);
+    const groups = [{ qty, sides: base.sides }];
+    (w.feats||[]).forEach(f => { if (checked.has(f.id) && f.addDice){ const d = parseDice(f.addDice); if (d) groups.push(d); } });
+    ctx = { kind:'wdmg', w, crit };
+    hideReadout();
+    box.roll(groups.map(g => ({ ...g, themeColor: diceColor })));
+  };
+  function renderDamage(flat){
+    const w = ctx.w;
+    const sum = flat.reduce((t,r)=>t+r.value, 0) + dmgBonus;
+    const html = '<b>' + (w.dtype||'') + ' damage</b> · ' + tally(flat).join(' + ') + sign(dmgBonus) + (ctx.crit ? ' <span class="crit">(critical!)</span>' : '');
+    setReadout(sum, ctx.crit ? 'CRIT DMG' : 'DAMAGE', html);
+    hideDamageBtn(); pendingDamage = null;
+  }
+
+  // SAVE — area weapons: no to-hit, just damage and the DC the target rolls against
+  function renderSave(flat){
+    const { save } = resolve(ctx.w, ctx.checked);
+    const sum = flat.reduce((t,r)=>t+r.value, 0) + dmgBonus;
+    const html = '<b>' + (ctx.w.dtype||'') + ' damage</b> · ' + tally(flat).join(' + ') + sign(dmgBonus) +
+                 ' &nbsp;·&nbsp; <b>' + (save||'') + '</b> save, half on a success';
+    setReadout(sum, 'DAMAGE', html);
+  }
+
+  document.getElementById('wclear-btn').onclick = () => {
+    if (ready) box.clear(); hideReadout(); hideDamageBtn(); pendingDamage = null; showHint();
+  };
+</script>
+</body>
+</html>

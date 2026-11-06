@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+  THE FRONTIER INDEX — READER SHELL
+  One reader for two independent collections:
+    read.html?day=N        → the daily PAPER (Frontier Index edition)
+    read.html?session=N    → a player's ACCOUNTING (game-session log)
+  The nav (Close · Earlier/Later) lives here and persists. Earlier/Later steps
+  within whichever collection you opened. No document is ever lost.
+
+  TO ADD: append one line to PAPERS (new paper) or SESSIONS (new accounting).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Frontier Index — Reader</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:wght@400;700&display=swap');
+  html, body { height:100%; }
+  body { margin:0; display:flex; flex-direction:column; background:#1d160f;
+    font-family:'Old Standard TT',Georgia,serif; }
+
+  .fi-nav { flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:.8rem;
+    padding:.5rem .9rem; background:#1d160f; border-bottom:2px solid #5c3f24;
+    box-shadow:0 2px 12px rgba(0,0,0,.5); }
+  .fi-close { display:inline-flex; align-items:center; gap:.4rem; color:#e8c877; text-decoration:none;
+    font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:.74rem; border:1px solid #8a6a2a;
+    padding:.42rem .9rem; border-radius:3px; background:#3a2a16; }
+  .fi-close:hover { background:#5c3f24; color:#fff; }
+  .fi-close .x { font-size:1.05rem; line-height:.7; }
+  .fi-label { color:#cdbf9a; font-size:.8rem; letter-spacing:1px; text-align:center; flex:1 1 auto; }
+  .fi-toggle { display:flex; align-items:center; gap:.5rem; }
+  .fi-btn { border:1px solid #5c4a2a; padding:.42rem .7rem; border-radius:3px; background:rgba(40,28,18,.5);
+    color:#e8c877; text-transform:uppercase; letter-spacing:1px; font-size:.7rem; cursor:pointer; user-select:none; }
+  .fi-btn:hover { background:#5c3f24; color:#fff; }
+  .fi-disabled { opacity:.3; pointer-events:none; }
+
+  .fi-frame { flex:1 1 auto; width:100%; border:0; display:block; background:#2b2620; }
+  @media(max-width:600px){ .fi-label{ font-size:.7rem; } }
+</style>
+</head>
+<body>
+
+  <nav class="fi-nav">
+    <a class="fi-close" href="index.html"><span class="x">&times;</span> Close</a>
+    <span class="fi-label" id="fiLabel">—</span>
+    <div class="fi-toggle">
+      <span class="fi-btn" id="fiPrev">‹ Earlier</span>
+      <span class="fi-btn" id="fiNext">Later ›</span>
+    </div>
+  </nav>
+
+  <iframe class="fi-frame" id="fiFrame" title="Frontier Index document"></iframe>
+
+<script>
+  // ===== EDIT HERE — one line per published paper / per played session =====
+  const PAPERS = [
+    { id: 1, file: 'frontier-index-broadsheet.html', label: 'Day 1 — The Town Meeting' },
+    { id: 2, file: 'frontier-index-day-02.html',     label: 'Day 2 — Cheyenne Lumber & the Court of Title' },
+  ];
+  const SESSIONS = [
+    { id: 1, file: 'session-01.html', label: 'Session 1 — The Town Meeting' },
+  ];
+  // ========================================================================
+
+  const COLLECTIONS = {
+    paper:   { param: 'day',     items: PAPERS },
+    session: { param: 'session', items: SESSIONS },
+  };
+
+  const frame = document.getElementById('fiFrame');
+  const label = document.getElementById('fiLabel');
+  const prevB = document.getElementById('fiPrev');
+  const nextB = document.getElementById('fiNext');
+
+  function parseUrl() {
+    const s = (location.search.match(/session=(\d+)/) || [])[1];
+    if (s) return { mode: 'session', id: +s };
+    const d = (location.search.match(/day=(\d+)/) || [])[1];
+    return { mode: 'paper', id: d ? +d : null };
+  }
+
+  function show(mode, id) {
+    const col = COLLECTIONS[mode] || COLLECTIONS.paper;
+    let idx = col.items.findIndex(x => x.id === id);
+    if (idx < 0) idx = col.items.length - 1;          // default to the latest
+    const it = col.items[idx];
+
+    frame.src = it.file + '?v=' + Date.now();   // cache-busted so edits always show
+    label.textContent = it.label;
+    document.title = 'The Frontier Index — ' + it.label;
+    history.replaceState(null, '', '?' + col.param + '=' + it.id);
+
+    if (idx > 0) { prevB.classList.remove('fi-disabled'); prevB.onclick = () => show(mode, col.items[idx - 1].id); }
+    else         { prevB.classList.add('fi-disabled');    prevB.onclick = null; }
+    if (idx < col.items.length - 1) { nextB.classList.remove('fi-disabled'); nextB.onclick = () => show(mode, col.items[idx + 1].id); }
+    else                            { nextB.classList.add('fi-disabled');    nextB.onclick = null; }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft'  && !prevB.classList.contains('fi-disabled')) prevB.onclick();
+    if (e.key === 'ArrowRight' && !nextB.classList.contains('fi-disabled')) nextB.onclick();
+    if (e.key === 'Escape') location.href = 'index.html';
+  });
+
+  const start = parseUrl();
+  show(start.mode, start.id);
+</script>
+</body>
+</html>
