@@ -9,7 +9,7 @@
 
   /* === ADVANCE THE CAMPAIGN: set --day to the current day (1..10); the train
        slides toward Laramie. Published days on the rail open the reader. === */
-  :root { --day: 2; --total: 10; }
+  :root { --day: 3; --total: 10; }
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -347,7 +347,7 @@
 
 <script>
   const TOTAL = 10;
-  const CAMPAIGN_DAY = 2;                       // the latest day actually played/published
+  const CAMPAIGN_DAY = 3;                       // the latest day actually played/published
   const EDITIONS = {                            // day -> paper file (add a line per new day)
     1: 'frontier-index-broadsheet.html',
     2: 'frontier-index-day-02.html'
@@ -371,7 +371,7 @@
   }
 
   // countdown readout for the current campaign day
-  const remain = TOTAL - CAMPAIGN_DAY + 1;
+  const remain = TOTAL - CAMPAIGN_DAY;
   if (remain <= 0) {
     bignum.textContent = '0'; cunit.textContent = 'the train arrives';
     sub.textContent = 'the commissioner decides today';
